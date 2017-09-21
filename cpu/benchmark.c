@@ -6,28 +6,37 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
-#include <time.h>
+#include <sys/time.h>
 
 // The dimension of the matrix
-#define N 500
+// default, but can be changed by command-line input
+int N = 1024;
 
+// prototypes
 int flops(int num_threads);
 int iops(int num_threads);
+void *float_matrix_thread(void *param);
+void *int_matrix_thread(void *param);
 
-void *float_thread(void *param);
-void *int_thread(void *param);
-
+// global mutex
 pthread_mutex_t lock;
 
 // global variable which will store the total number of instructions
-// executed this run
-// synchronized with a mutex
-int counter = 0;
+long num_operations = 0;
+__thread long count;
 
+// parameters of the float matrix thread
 struct float_matrix_block {
-    const double *A;
-    const double *B;
+    const double *A, *B;
     double *C;
+    int tid;
+    int num_threads;
+};
+
+// parameters of the int matrix thread
+struct int_matrix_block {
+    const int *A, *B;
+    int *C;
     int tid;
     int num_threads;
 };
@@ -35,12 +44,13 @@ struct float_matrix_block {
 int main(int argc, char *argv[]) {
     /*
      * Usage:
-     * $ benchmark <type> <num_threads>
-     * type: 'float' or 'int'
+     * $ benchmark <type> <num_threads> <N>
+     * type: 'flops' or 'iops'
      * num_threads: 1, 2, 4, 8
+     * N (optional, default 1024) dimension of the square matrix
      */
 
-    if (argc != 3) {
+    if (argc != 3 && argc != 4) {
         printf("Error: 2 parameters required");
         exit(1);
     }
@@ -51,15 +61,20 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    if (argv[3] != NULL) {
+        N = atoi(argv[3]);
+    }
+
     int n = atoi(argv[2]);
-    if (strcmp(argv[1], "float") == 0) {
+    if (strcmp(argv[1], "flops") == 0) {
         exit(flops(n));
     }
-    else if (strcmp(argv[1], "int") == 0) {
+    else if (strcmp(argv[1], "iops") == 0) {
         exit(iops(n));
     }
     else {
         printf("Usage error\n");
+        exit(1);
     }
 
 }
@@ -76,18 +91,19 @@ int flops(int num_threads) {
         exit(1);
     }
 
+    // initialize the matrix with double-precision floats
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             A[i*N + j] =  ((double) rand())/((double)RAND_MAX);
             B[i*N + j] =  ((double) rand())/((double)RAND_MAX);
-
         }
     }
 
+    // build the parameter data structure for each thread and start the threads
     pthread_t thread[num_threads];
-
-
-    clock_t start = clock(), diff;
+    struct timeval start;
+    struct timeval end;
+    gettimeofday(&start, NULL);
     for (int num = 0; num < num_threads; num++) {
         struct float_matrix_block arg;
         arg.A = A;
@@ -98,52 +114,23 @@ int flops(int num_threads) {
 
         pthread_attr_t attr;
         pthread_attr_init(&attr);
-        pthread_create(&(thread[num]), &attr, float_thread, &arg);
+        pthread_create(&(thread[num]), &attr, float_matrix_thread, &arg);
     }
-
     for (int num = 0; num < num_threads; num++) {
-        pthread_join(thread[num], NULL);
+        pthread_join(thread[num], NULL);;
     }
-    diff = clock() - start;
+    gettimeofday(&end, NULL);
 
-    double gigaflop = (double) counter / 1000000000;
-    double time = diff / CLOCKS_PER_SEC;
+    // calculate the elapsed time in microseconds
+    long elapsed_time_us = (end.tv_sec-start.tv_sec)*1000000 + end.tv_usec-start.tv_usec;
 
-    double gflops = gigaflop / time;
-    printf("GFlops: %f\n", gflops);
+    // divide flops by 1000 instead of a billion because we are dividing by microseconds instead of seconds
+    double gflops = (double) num_operations / elapsed_time_us / 1000;
+    printf("GFlops: %lf\n", gflops);
 
     free(A);
     free(B);
     free(C);
-
-}
-
-void *float_thread(void *param) {
-    struct float_matrix_block *arg = param; // the structure that holds the parameters of the thread
-    int thread_partition = (int) N / arg->num_threads;
-
-    for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
-        // Counter will need to accumulate the operations performed in each loop variable increment too
-        pthread_mutex_lock(&lock);
-        counter+=5; // 4 operations in loop plus this increment
-        pthread_mutex_unlock(&lock);
-        for (int j = 0; j < N; j++){
-            // C[i][j] = 0
-            arg->C[i*N + j] = 0;
-            pthread_mutex_lock(&lock);
-            counter += 4; // 1 op from loop, 2 from array index, 1 from this increment
-            pthread_mutex_unlock(&lock);
-            for(int k = 0; k < N; k++){
-                // C[i][j] += A[i][k] * B[k][j]
-                arg->C[i*N + j] += arg->A[i*N + k] * arg->B[k*N + j];
-                pthread_mutex_lock(&lock);
-                // 1 op from loop, 6 from array index, 1 multiplication, 1 addition, this increment
-                counter+=10;
-                pthread_mutex_unlock(&lock);
-            }
-        }
-    }
-    pthread_exit(0);
 }
 
 int iops(int num_threads) {
@@ -157,17 +144,97 @@ int iops(int num_threads) {
         exit(1);
     }
 
+
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             A[i*N + j] = rand() + 1;
             B[i*N + j] = rand() + 1;
-
         }
     }
+    pthread_t thread[num_threads];
 
+    struct timeval start;
+    struct timeval end;
+    gettimeofday(&start, NULL);
+    for (int num = 0; num < num_threads; num++) {
+        struct int_matrix_block arg;
+        arg.A = A;
+        arg.B = B;
+        arg.C = C;
+        arg.tid = num;
+        arg.num_threads = num_threads;
+
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_create(&(thread[num]), &attr, int_matrix_thread, &arg);
+    }
+    for (int num = 0; num < num_threads; num++) {
+        pthread_join(thread[num], NULL);;
+    }
+    gettimeofday(&end, NULL);
+
+    // calculate the elapsed time in microseconds
+    long elapsed_time_us = (end.tv_sec-start.tv_sec)*1000000 + end.tv_usec-start.tv_usec;
+
+    // divide flops by 1000 instead of a billion because we are dividing by microseconds instead of seconds
+    double iops = (double) num_operations / elapsed_time_us / 1000;
+    printf("GIops: %lf\n", iops);
 
 
     free(A);
     free(B);
     free(C);
 }
+
+void *float_matrix_thread(void *param) {
+    struct float_matrix_block *arg = param; // the structure that holds the parameters of the thread
+    int thread_partition = (int) N / arg->num_threads;
+
+    count = 0;
+    for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
+        // Counter will need to accumulate the operations performed in each loop variable increment too
+        count+=4;  // 4 operations in loop plus this increment
+        for (int j = 0; j < N; j++){
+            // C[i][j] = 0
+            arg->C[i*N + j] = 0;
+            count += 4; // 1 op from loop, 2 from array index, 1 from this increment
+            for(int k = 0; k < N; k++){
+                // C[i][j] += A[i][k] * B[k][j]
+                arg->C[i*N + j] += arg->A[i*N + k] * arg->B[k*N + j];
+                // 1 op from loop, 6 from array index, 1 multiplication, 1 addition, this increment
+                count+=10;
+            }
+        }
+    }
+    pthread_mutex_lock(&lock);
+    num_operations+=count;
+    pthread_mutex_unlock(&lock);
+    pthread_exit(0);
+}
+
+void *int_matrix_thread(void *param) {
+    struct int_matrix_block *arg = param; // the structure that holds the parameters of the thread
+    int thread_partition = (int) N / arg->num_threads;
+
+    count = 0;
+    for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
+        // Counter will need to accumulate the operations performed in each loop variable increment too
+        count+=4;  // 4 operations in loop plus this increment
+        for (int j = 0; j < N; j++){
+            // C[i][j] = 0
+            arg->C[i*N + j] = 0;
+            count += 4; // 1 op from loop, 2 from array index, 1 from this increment
+            for(int k = 0; k < N; k++){
+                // C[i][j] += A[i][k] * B[k][j]
+                arg->C[i*N + j] += arg->A[i*N + k] * arg->B[k*N + j];
+                // 1 op from loop, 6 from array index, 1 multiplication, 1 addition, this increment
+                count+=10;
+            }
+        }
+    }
+    pthread_mutex_lock(&lock);
+    num_operations+=count;
+    pthread_mutex_unlock(&lock);
+    pthread_exit(0);
+}
+
