@@ -23,7 +23,6 @@ pthread_mutex_t lock;
 
 // global variable which will store the total number of instructions
 long num_operations = 0;
-__thread long count;
 
 // parameters of the float matrix thread
 struct float_matrix_block {
@@ -54,6 +53,9 @@ int main(int argc, char *argv[]) {
         printf("Error: 2 parameters required");
         exit(1);
     }
+
+    // Seed the random number generator for deterministic-ish results
+    srand(50);
 
     if (pthread_mutex_init(&lock, NULL) != 0)
     {
@@ -190,7 +192,7 @@ void *float_matrix_thread(void *param) {
     struct float_matrix_block *arg = param; // the structure that holds the parameters of the thread
     int thread_partition = (int) N / arg->num_threads;
 
-    count = 0;
+    long count = 0;
     for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
         // Counter will need to accumulate the operations performed in each loop variable increment too
         count+=4;  // 4 operations in loop plus this increment
@@ -216,7 +218,7 @@ void *int_matrix_thread(void *param) {
     struct int_matrix_block *arg = param; // the structure that holds the parameters of the thread
     int thread_partition = (int) N / arg->num_threads;
 
-    count = 0;
+    long count = 0;
     for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
         // Counter will need to accumulate the operations performed in each loop variable increment too
         count+=4;  // 4 operations in loop plus this increment
@@ -237,4 +239,3 @@ void *int_matrix_thread(void *param) {
     pthread_mutex_unlock(&lock);
     pthread_exit(0);
 }
-
