@@ -3,7 +3,10 @@
 #include <time.h>
 
 /* number of threads defined in a block */
-#define NUMTHREADS 64
+//#define NUMTHREADS 64
+
+/* size of the vectors */
+#define DLEN 262144
 
 /* debug mode prints the contents of the matrices after the calculation
  * 0 - deactivate debug mode
@@ -22,108 +25,110 @@ typedef double DTYPE;
 typedef float DTYPE;
 #endif
 
-/* function that initializes the values in a matrix given as paramenter,
+/* function that initializes the values in a vector given as paramenter,
  * and that has a definition and implementation dependent on the
  * definition of several macros in order to determine the data type of 
- * the matrix;
+ * the vector;
  */
-__host__ void init(DTYPE *mat, int N)
+__host__ void init(DTYPE *vec, int N)
 {
-    int i, j, sign;
+    int i, sign;
     DTYPE x, y;
 
-    srand(time(NULL));
-
     for (i = 0; i < N; ++i) {
-        for (j = 0; j < N; ++j) {
-            x = rand();
-            y = rand() + 1;
-            sign = (-1) * (rand() % 2 + 1);
-            mat[i * N + j] = sign * (x / y);
-        }
+        x = rand() % 100;
+        y = (rand() + 1) % 100;
+        sign = (-1) + (rand() % 2 * 2);
+        vec[i] = sign * (x / y);
     }
 }
 
-/* function that prints the contents of a matrix given as parameter,
+/* function that prints the contents of a vector given as parameter,
  * and that has a definition and implementation dependent on the
  * definition of several macros in order to determine the data type of
- * the matrix;
+ * the vector;
  */
-__host__ void print_mat(DTYPE *mat, int N)
+__host__ void print_vec(DTYPE *vec, int N)
 {
-    int i, j;
+    int i;
 
     for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
 #ifdef DOUBLE
-            printf("%lf ", mat[i * N + j]);
+        printf("%lf ", vec[i]);
 #elif FLOAT
-            printf("%f ", mat[i * N + j]);
+        printf("%f ", vec[i]);
 #endif
-        }
-        printf("\n");
     }
+    printf("\n");
 }
 
-/* GPU device function that executes multiplication */
-__global__ void multiply(DTYPE *A, DTYPE *B, DTYPE *C, int N) {
-    int i, row, col, index;
-
-    index = blockIdx.x * blockDim.x + threadIdx.x;
-    row = index / N;
-    col = index % N;
-
-    C[index] = 0.0;
-    for (i = 0; i < N; ++i) {
-        C[index] += A[row * N + i] * B[i * N + col];
-    }
+/* GPU device function that D = A * B * scalar + C */
+__global__ void func(DTYPE *A, DTYPE *B, DTYPE *C, DTYPE *D, DTYPE s, int N) {
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    D[index] = A[index] * B[index] * s + C[index];
 }
 
 int main(int argc, char **argv)
 {
-    int N;
-    DTYPE *A, *B, *C;
-    DTYPE *dA, *dB, *dC;
+    int N, i, NUMTHREADS;
+    DTYPE *A, *B, *C, *D, scalar;
+    DTYPE *dA, *dB, *dC, *dD;
     clock_t start, end;
 
-    if (argc <= 1 || argc >= 3) {
-        perror("program usage: <./benchmark.exe> <size>");
+    if (argc <= 1 || argc >= 4) {
+        perror("program usage: <./benchmark.exe> <iterations> <num_threads");
         return -1;
     } else {
         N = atoi(argv[1]);
+        NUMTHREADS = atoi(argv[2]);
     }
 
-    A = (DTYPE *) malloc(DSIZE * N * N);
-    B = (DTYPE *) malloc(DSIZE * N * N);
-    C = (DTYPE *) malloc(DSIZE * N * N);
+    A = (DTYPE *) malloc(DSIZE * DLEN);
+    B = (DTYPE *) malloc(DSIZE * DLEN);
+    C = (DTYPE *) malloc(DSIZE * DLEN);
+    D = (DTYPE *) malloc(DSIZE * DLEN);
 
-    cudaMalloc((void **) &dA, DSIZE * N * N);
-    cudaMalloc((void **) &dB, DSIZE * N * N);
-    cudaMalloc((void **) &dC, DSIZE * N * N);
+    cudaMalloc((void **) &dA, DSIZE * DLEN);
+    cudaMalloc((void **) &dB, DSIZE * DLEN);
+    cudaMalloc((void **) &dC, DSIZE * DLEN);
+    cudaMalloc((void **) &dD, DSIZE * DLEN);
 
-    init(A, N);
-    init(B, N);
+    srand(time(NULL));
+    init(A, DLEN);
+    init(B, DLEN);
+    init(C, DLEN);
+    scalar = ((-1) + (rand() % 2 * 2)) * (rand() % 10 + 1);
 
     if (DEBUG) {
         printf("A = \n");
-        print_mat(A, N);
+        print_vec(A, DLEN);
         printf("B = \n");
-        print_mat(B, N);
+        print_vec(B, DLEN);
+        printf("C = \n");
+        print_vec(C, DLEN);
+#ifdef DOUBLE
+        printf("scalar = %lf\n", scalar);
+#elif FLOAT
+        printf("scalar = %f\n", scalar);
+#endif
     }
 
-    cudaMemcpy(dA, A, DSIZE * N * N, cudaMemcpyHostToDevice);
-    cudaMemcpy(dB, B, DSIZE * N * N, cudaMemcpyHostToDevice);
+    cudaMemcpy(dA, A, DSIZE * DLEN, cudaMemcpyHostToDevice);
+    cudaMemcpy(dB, B, DSIZE * DLEN, cudaMemcpyHostToDevice);
+    cudaMemcpy(dC, C, DSIZE * DLEN, cudaMemcpyHostToDevice);
     
     start = clock();
-    multiply<<<(N * N / NUMTHREADS), NUMTHREADS>>>(dA, dB, dC, N);
-    cudaDeviceSynchronize();
+    for (i = 0; i < N; ++i) {
+        func<<<(DLEN / NUMTHREADS), NUMTHREADS>>>(dA, dB, dC, dD, scalar, DLEN);
+        cudaDeviceSynchronize();
+    }
     end = clock();
 
-    cudaMemcpy(C, dC, DSIZE * N * N, cudaMemcpyDeviceToHost);
+    cudaMemcpy(D, dD, DSIZE * DLEN, cudaMemcpyDeviceToHost);
     
     if (DEBUG) {
-        printf("C = \n");
-        print_mat(C, N);
+        printf("D = \n");
+        print_vec(D, DLEN);
     }
 
     printf("Execution time: %ldus\n", 
@@ -132,10 +137,12 @@ int main(int argc, char **argv)
     cudaFree(dA);
     cudaFree(dB);
     cudaFree(dC);
+    cudaFree(dD);
 
     free(A);
     free(B);
     free(C);
+    free(D);
 
     return 0;
 }
