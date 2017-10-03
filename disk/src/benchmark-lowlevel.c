@@ -15,6 +15,7 @@
 #define RANDOM 2
 
 #define SETSIZE 10 * 128 * 1024 * 1024
+#define DEBUG 1
 
 typedef struct thread_arg_t
 {
@@ -68,6 +69,10 @@ void *work(void *argv)
                     arg->pos_vec[arg->pos_start + i] + rc);
             if (rd < 0) {
                 printf("Error reading from file\n");
+                if (DEBUG) {
+                    printf("Error at position %ld\n", 
+                            arg->pos_vec[arg->pos_start + i] + rc);
+                }
                 free(buffer);
                 pthread_exit(NULL);
             }
@@ -81,6 +86,10 @@ void *work(void *argv)
                         arg->pos_vec[arg->pos_start + i] + rc);
                 if (rd < 0) {
                     printf("Error writing to file\n");
+                    if (DEBUG) {
+                        printf("Error at position %ld\n", 
+                                arg->pos_vec[arg->pos_start + i] + rc);
+                    }
                     free(buffer);
                     pthread_exit(NULL);
                 }
@@ -219,7 +228,6 @@ int main(int argc, char **argv)
         }
     }
 
-    printf("Experiment results\n");
     for (i = 0; i < num_threads; ++i) {
         printf("thread %d total runtime: %ld ms\n", i, args[i].runtime_total);
         printf("thread %d average latency: %ld ms\n", i, 
