@@ -56,7 +56,8 @@ void *work(void *argv)
 {
     thread_arg_t *arg = (thread_arg_t *) argv;
     char *buffer;
-    int i, rc, rd;
+    int i;
+    long rc, rd;
     clock_t start, end;
 
     buffer = (char *) malloc(arg->block_size * sizeof(char));
