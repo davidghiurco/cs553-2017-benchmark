@@ -71,8 +71,13 @@ void *work(void *argv)
             if (rd < 0) {
                 printf("Error reading from file\n");
                 if (DEBUG) {
-                    printf("Error at position %ld\n", 
+                    printf("Error at position: %ld\n", 
                             arg->pos_vec[arg->pos_start + i] + rc);
+                    printf("Block index: %d\n", i);
+                    printf("Block start: %ld\n", 
+                            arg->pos_vec[arg->pos_start + i]);
+                    printf("Number of blocks: %d\n", arg->pos_length);
+                    printf("Number of bytes read: %ld", rc);
                 }
                 free(buffer);
                 pthread_exit(NULL);
