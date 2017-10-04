@@ -8,13 +8,13 @@ function clear_cache {
 for mode in {0..2}
 do
     logfile="temp.log"
-    if [ mode -eq 0 ]
+    if [ $mode -eq 0 ]
     then
         logfile="read-write.log"
-    elif [ mode -eq 1 ]
+    elif [ $mode -eq 1 ]
     then
         logfile="sequential-read.log"
-    elif [ mode -eq 2 ]
+    elif [ $mode -eq 2 ]
     then
         logfile="random-read.log"
     else
@@ -25,16 +25,16 @@ do
 
     for size in {0..3}
     do
-        if [ size -eq 0 ]
+        if [ $size -eq 0 ]
         then
             echo "Running 8B block size experiment" >> $logfile
-        elif [ size -eq 1 ]
+        elif [ $size -eq 1 ]
         then
             echo "Running 8KB block size experiment" >> $logfile
-        elif [ size -eq 2 ]
+        elif [ $size -eq 2 ]
         then
             echo "Running 8MB block size experiment" >> $logfile
-        elif [ size -eq 3 ]
+        elif [ $size -eq 3 ]
         then
             echo "Running 80MB block size experiment" >> $logfile
         else
