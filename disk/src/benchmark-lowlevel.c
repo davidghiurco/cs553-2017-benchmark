@@ -48,7 +48,7 @@ void init_pos(long *vec, int n, int block_size)
     int i;
 
     for (i = 0; i < n; ++i) {
-        vec[i] = i * block_size;
+        vec[i] = (long) i * (long) block_size;
     }
 }
 
@@ -103,7 +103,7 @@ void *work(void *argv)
             } while (rc < arg->block_size);
         }
         end = clock();
-        arg->runtime_total += ((long) (end - start) * 1000) / CLOCKS_PER_SEC;
+        arg->runtime_total += ((long) (end - start) * 1000000) / CLOCKS_PER_SEC;
     }
 
     arg->runtime_average = arg->runtime_total / arg->pos_length;
@@ -139,15 +139,19 @@ int main(int argc, char **argv)
         switch (atoi(argv[2])) {
             case SIZE8B:
                 block_size = 8;
+                num_blocks = SETSIZE / ((block_size / 8) * 1024 * 1024);
                 break;
             case SIZE8KB:
                 block_size = 8 * 1024;
+                num_blocks = SETSIZE / (block_size / 8);
                 break;
             case SIZE8MB:
                 block_size = 8 * 1024 * 1024;
+                num_blocks = SETSIZE / (block_size / 8);
                 break;
             case SIZE80MB:
                 block_size = 80 * 1024 * 1024;
+                num_blocks = SETSIZE / (block_size / 8);
                 break;
             default:
                 printf("Unsupported value for block size\n");
@@ -235,8 +239,8 @@ int main(int argc, char **argv)
     }
 
     for (i = 0; i < num_threads; ++i) {
-        printf("thread %d total runtime: %ld ms\n", i, args[i].runtime_total);
-        printf("thread %d average latency: %ld ms\n", i, 
+        printf("thread %d total runtime: %ld us\n", i, args[i].runtime_total);
+        printf("thread %d average latency: %ld us\n", i, 
                 args[i].runtime_average);
     }
 
