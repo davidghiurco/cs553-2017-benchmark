@@ -38,7 +38,7 @@ do
 
         for threads in 1 2 4 8
         do
-	        clear_cache
+            clear_cache
             ./bin/benchmark-lowlevel.exe $threads $size $mode >> $logfile
         done
     done
