@@ -158,7 +158,6 @@ int main(int argc, char **argv)
                 printf("Unsupported value for block size\n");
                 exit(-1);
         }
-        num_blocks = SETSIZE / (block_size / 8);
         switch (atoi(argv[3])) {
             case READWRITE:
                 mode = READWRITE;
