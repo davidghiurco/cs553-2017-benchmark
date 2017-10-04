@@ -15,7 +15,8 @@
 #define RANDOM 2
 
 #define SETSIZE 10 * 128 * 1024 * 1024
-#define DEBUG 1
+#define SMALLSETSIZE 128
+#define DEBUG 0
 
 typedef struct thread_arg_t
 {
@@ -139,7 +140,7 @@ int main(int argc, char **argv)
         switch (atoi(argv[2])) {
             case SIZE8B:
                 block_size = 8;
-                num_blocks = SETSIZE / ((block_size / 8) * 1024 * 1024);
+                num_blocks = SMALLSETSIZE;
                 break;
             case SIZE8KB:
                 block_size = 8 * 1024;
