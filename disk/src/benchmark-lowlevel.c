@@ -15,7 +15,7 @@
 #define RANDOM 2
 
 #define SETSIZE 10 * 128 * 1024 * 1024
-#define SMALLSETSIZE 128
+#define SMALLSETSIZE 1024
 #define DEBUG 0
 
 typedef struct thread_arg_t
