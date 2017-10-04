@@ -16,6 +16,8 @@ do
         logfile="sequential-read.log"
     elif [ mode -eq 2 ]
         logfile="random-read.log"
+    else
+        logfile="temp.log"
     fi
 
     echo "" > $logfile
@@ -34,6 +36,8 @@ do
         elif [ size -eq 3 ]
         then
             echo "Running 80MB block size experiment" >> $logfile
+        else
+            echo "Where there is a Shell there is a way!"
         fi
 
         for threads in 1 2 4 8
