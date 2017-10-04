@@ -15,6 +15,7 @@ do
     then
         logfile="sequential-read.log"
     elif [ mode -eq 2 ]
+    then
         logfile="random-read.log"
     else
         logfile="temp.log"
