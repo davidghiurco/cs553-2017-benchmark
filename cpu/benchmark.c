@@ -1,5 +1,5 @@
 //
-// Created by david on 9/16/17.
+// Written by David Ghiurco
 //
 
 #include <stdlib.h>
@@ -15,16 +15,10 @@ int N = 1024;
 #define NUM_EXPERIMENT_REPEATS 50
 
 // prototypes
-double flops(int num_threads);
-double iops(int num_threads);
+long flops(int num_threads);
+long iops(int num_threads);
 void *float_matrix_thread(void *param);
 void *int_matrix_thread(void *param);
-
-// global mutex
-pthread_mutex_t lock;
-
-// global variable which will store the total number of instructions
-long num_operations = 0;
 
 // parameters of the float matrix thread
 struct float_matrix_block {
@@ -42,6 +36,23 @@ struct int_matrix_block {
     int num_threads;
 };
 
+/*
+ * This benchmark is setup as a "pessimistic benchmark" (just like HPL is)
+ * What this means is essentially, only the operations which are actually useful to the calculation
+ * of the matrix multiplication are counted as operations performed by this program.
+ * Index calculations, loop increments, etc, are considered metadata/overhead.
+ *
+ * Note that if the metadata calculations were included in the metric, this benchmark would become a
+ * "optimistic" benchmark, which would take into account all arithmetic operations performed.
+ * That's not really useful in the real world however, because people mostly care about the "useful"
+ * number of operations performed.
+ *
+ * Also, if this metadata operations were to be included, the performance of this benchmark would far exceed
+ * the performance of the HPL benchmark, which is a strong indicator that it is too optimistic.
+ *
+ * Therefore, The number of operations that we care about depends ONLY on N. Each entry in matrix C takes 2N operations
+ * (N multiplications + N additions) and there are N x N entries
+ */
 int main(int argc, char *argv[]) {
     /*
      * Usage:
@@ -59,31 +70,31 @@ int main(int argc, char *argv[]) {
     // Seed the random number generator for deterministic-ish results
     srand(50);
 
-    if (pthread_mutex_init(&lock, NULL) != 0)
-    {
-        printf("\n mutex init failed\n");
-        return 1;
-    }
-
+    // if N was provided as commandline parameter, use that instead of the top-level defined N dimension
     if (argv[3] != NULL) {
         N = atoi(argv[3]);
     }
 
-    int n = atoi(argv[2]);
-    double sum = 0;
+    int NUM_OPS = 2 * N * (N * N);
+
+    int num_threads = atoi(argv[2]);
+
+    // stores the total runtime for each experiment iteration in microseconds
+    long aggregate_runtime_us = 0;
+
     if (strcmp(argv[1], "flops") == 0) {
         for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++) {
-            sum += flops(n);
+            aggregate_runtime_us += flops(num_threads);
         }
-        double average = sum / NUM_EXPERIMENT_REPEATS;
+        double average = NUM_OPS * NUM_EXPERIMENT_REPEATS / (double) aggregate_runtime_us;
         printf("GFlops: %f\n", average);
 
     }
     else if (strcmp(argv[1], "iops") == 0) {
         for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++) {
-            sum += iops(n);
+            aggregate_runtime_us += iops(num_threads);
         }
-        double average = sum / NUM_EXPERIMENT_REPEATS;
+        double average = NUM_OPS * NUM_EXPERIMENT_REPEATS / (double) aggregate_runtime_us;
         printf("GIops: %f\n", average);
     }
     else {
@@ -93,8 +104,12 @@ int main(int argc, char *argv[]) {
 
 }
 
-
-double flops(int num_threads) {
+/*
+ * Perform matrix multiplication on an N x N matrix of double-precision floats with the given number of threads
+ *
+ * return: runtime in microseconds
+ */
+long flops(int num_threads) {
     double *A, *B, *C;
     A = malloc(N * N * sizeof(double));
     B = malloc(N * N * sizeof(double));
@@ -135,21 +150,21 @@ double flops(int num_threads) {
     }
     gettimeofday(&end, NULL);
 
-    // calculate the elapsed time in microseconds
-    long elapsed_time_us = (end.tv_sec-start.tv_sec)*1000000 + end.tv_usec-start.tv_usec;
-
-    // divide flops by 1000 instead of a billion because we are dividing by microseconds instead of seconds
-    double gflops = (double) num_operations / elapsed_time_us / 1000;
-    // printf("GFlops: %lf\n", gflops);
-
     free(A);
     free(B);
     free(C);
 
-    return gflops;
+    // calculate the elapsed time in microseconds and return
+    return (long) (end.tv_sec-start.tv_sec)*1000000 + end.tv_usec-start.tv_usec;
+
 }
 
-double iops(int num_threads) {
+/*
+ * Perform matrix multiplication on an N x N matrix of integers with the given number of threads
+ *
+ * return: runtime in microseconds
+ */
+long iops(int num_threads) {
     int *A, *B, *C;
     A = malloc(N * N * sizeof(int));
     B = malloc(N * N * sizeof(int));
@@ -189,68 +204,48 @@ double iops(int num_threads) {
     }
     gettimeofday(&end, NULL);
 
-    // calculate the elapsed time in microseconds
-    long elapsed_time_us = (end.tv_sec-start.tv_sec)*1000000 + end.tv_usec-start.tv_usec;
-
-    // divide flops by 1000 instead of a billion because we are dividing by microseconds instead of seconds
-    double giops = (double) num_operations / elapsed_time_us / 1000;
-    // printf("GIops: %lf\n", iops);
-
-
     free(A);
     free(B);
     free(C);
-    return giops;
+
+    // calculate the elapsed time in microseconds and return
+    return (long) (end.tv_sec-start.tv_sec)*1000000 + end.tv_usec-start.tv_usec;;
 }
 
+/*
+ * worker thread spawned by function flops()
+ * takes in a parameter struct pointer containing the bounds of the matrix problem for the particular thread
+ */
 void *float_matrix_thread(void *param) {
     struct float_matrix_block *arg = param; // the structure that holds the parameters of the thread
-    int thread_partition = (int) N / arg->num_threads;
+    int thread_partition = N / arg->num_threads;
 
-    long count = 0;
     for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
-        // Counter will need to accumulate the operations performed in each loop variable increment too
-        count+=5;  // 4 operations in loop plus this increment
         for (int j = 0; j < N; j++){
-            // C[i][j] = 0
             arg->C[i*N + j] = 0;
-            count += 4; // 1 op from loop, 2 from array index, 1 from this increment
             for(int k = 0; k < N; k++){
-                // C[i][j] += A[i][k] * B[k][j]
                 arg->C[i*N + j] += arg->A[i*N + k] * arg->B[k*N + j];
-                // 1 op from loop, 6 from array index, 1 multiplication, 1 addition, this increment
-                count+=10;
             }
         }
     }
-    pthread_mutex_lock(&lock);
-    num_operations+=count;
-    pthread_mutex_unlock(&lock);
     pthread_exit(0);
 }
 
+/*
+ * worker thread spawned by function iops()
+ * takes in a parameter struct pointer containing the bounds of the matrix problem for the particular thread
+ */
 void *int_matrix_thread(void *param) {
     struct int_matrix_block *arg = param; // the structure that holds the parameters of the thread
-    int thread_partition = (int) N / arg->num_threads;
+    int thread_partition = N / arg->num_threads;
 
-    long count = 0;
     for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
-        // Counter will need to accumulate the operations performed in each loop variable increment too
-        count+=5;  // 4 operations in loop plus this increment
         for (int j = 0; j < N; j++){
-            // C[i][j] = 0
             arg->C[i*N + j] = 0;
-            count += 4; // 1 op from loop, 2 from array index, 1 from this increment
             for(int k = 0; k < N; k++){
-                // C[i][j] += A[i][k] * B[k][j]
                 arg->C[i*N + j] += arg->A[i*N + k] * arg->B[k*N + j];
-                // 1 op from loop, 6 from array index, 1 multiplication, 1 addition, this increment
-                count+=10;
             }
         }
     }
-    pthread_mutex_lock(&lock);
-    num_operations+=count;
-    pthread_mutex_unlock(&lock);
     pthread_exit(0);
 }
