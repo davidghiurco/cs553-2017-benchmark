@@ -12,7 +12,7 @@
 // default, but can be changed by command-line input
 int N = 1024;
 
-#define NUM_EXPERIMENT_REPEATS 50
+#define NUM_EXPERIMENT_REPEATS 25
 
 // prototypes
 double flops(int num_threads);
@@ -209,7 +209,7 @@ void *float_matrix_thread(void *param) {
     long count = 0;
     for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
         // Counter will need to accumulate the operations performed in each loop variable increment too
-        count+=4;  // 4 operations in loop plus this increment
+        count+=5;  // 4 operations in loop plus this increment
         for (int j = 0; j < N; j++){
             // C[i][j] = 0
             arg->C[i*N + j] = 0;
@@ -235,7 +235,7 @@ void *int_matrix_thread(void *param) {
     long count = 0;
     for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
         // Counter will need to accumulate the operations performed in each loop variable increment too
-        count+=4;  // 4 operations in loop plus this increment
+        count+=5;  // 4 operations in loop plus this increment
         for (int j = 0; j < N; j++){
             // C[i][j] = 0
             arg->C[i*N + j] = 0;
