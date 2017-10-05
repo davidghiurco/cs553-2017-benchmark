@@ -12,7 +12,7 @@
 // default, but can be changed by command-line input
 int N = 1024;
 
-#define NUM_EXPERIMENT_REPEATS 1000
+#define NUM_EXPERIMENT_REPEATS 50
 
 // prototypes
 double flops(int num_threads);
