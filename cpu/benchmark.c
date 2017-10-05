@@ -12,7 +12,7 @@
 // default, but can be changed by command-line input
 int N = 1024;
 
-#define NUM_EXPERIMENT_REPEATS 25
+#define NUM_EXPERIMENT_REPEATS 50
 
 // prototypes
 double flops(int num_threads);
@@ -72,16 +72,17 @@ int main(int argc, char *argv[]) {
     int n = atoi(argv[2]);
     double sum = 0;
     if (strcmp(argv[1], "flops") == 0) {
-
-        for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++)
+        for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++) {
             sum += flops(n);
+        }
         double average = sum / NUM_EXPERIMENT_REPEATS;
         printf("GFlops: %f\n", average);
 
     }
     else if (strcmp(argv[1], "iops") == 0) {
-        for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++)
+        for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++) {
             sum += iops(n);
+        }
         double average = sum / NUM_EXPERIMENT_REPEATS;
         printf("GIops: %f\n", average);
     }
