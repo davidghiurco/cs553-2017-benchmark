@@ -2,4 +2,3 @@
 CMakeLists.txt
 cmake-build-debug/
 *.bin
-*/log/
