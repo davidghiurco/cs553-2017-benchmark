@@ -1,4 +1,4 @@
-CC = gcc
+CC = c99
 CFLAGS = -march=native -mtune=native -O3 -mavx
 
 clean:
