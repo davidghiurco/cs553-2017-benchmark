@@ -12,9 +12,11 @@
 // default, but can be changed by command-line input
 int N = 1024;
 
+#define NUM_EXPERIMENT_REPEATS 1000
+
 // prototypes
-int flops(int num_threads);
-int iops(int num_threads);
+double flops(int num_threads);
+double iops(int num_threads);
 void *float_matrix_thread(void *param);
 void *int_matrix_thread(void *param);
 
@@ -68,11 +70,20 @@ int main(int argc, char *argv[]) {
     }
 
     int n = atoi(argv[2]);
+    double sum = 0;
     if (strcmp(argv[1], "flops") == 0) {
-        exit(flops(n));
+
+        for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++)
+            sum += flops(n);
+        double average = sum / NUM_EXPERIMENT_REPEATS;
+        printf("GFlops: %f\n", average);
+
     }
     else if (strcmp(argv[1], "iops") == 0) {
-        exit(iops(n));
+        for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++)
+            sum += iops(n);
+        double average = sum / NUM_EXPERIMENT_REPEATS;
+        printf("GIops: %f\n", average);
     }
     else {
         printf("Usage error\n");
@@ -82,7 +93,7 @@ int main(int argc, char *argv[]) {
 }
 
 
-int flops(int num_threads) {
+double flops(int num_threads) {
     double *A, *B, *C;
     A = malloc(N * N * sizeof(double));
     B = malloc(N * N * sizeof(double));
@@ -128,14 +139,16 @@ int flops(int num_threads) {
 
     // divide flops by 1000 instead of a billion because we are dividing by microseconds instead of seconds
     double gflops = (double) num_operations / elapsed_time_us / 1000;
-    printf("GFlops: %lf\n", gflops);
+    // printf("GFlops: %lf\n", gflops);
 
     free(A);
     free(B);
     free(C);
+
+    return gflops;
 }
 
-int iops(int num_threads) {
+double iops(int num_threads) {
     int *A, *B, *C;
     A = malloc(N * N * sizeof(int));
     B = malloc(N * N * sizeof(int));
@@ -179,13 +192,14 @@ int iops(int num_threads) {
     long elapsed_time_us = (end.tv_sec-start.tv_sec)*1000000 + end.tv_usec-start.tv_usec;
 
     // divide flops by 1000 instead of a billion because we are dividing by microseconds instead of seconds
-    double iops = (double) num_operations / elapsed_time_us / 1000;
-    printf("GIops: %lf\n", iops);
+    double giops = (double) num_operations / elapsed_time_us / 1000;
+    // printf("GIops: %lf\n", iops);
 
 
     free(A);
     free(B);
     free(C);
+    return giops;
 }
 
 void *float_matrix_thread(void *param) {
