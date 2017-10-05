@@ -18,6 +18,12 @@ void *seq_write_access_thread(void *param);
 
 void *random_write_access_thread(void *param);
 
+// A utility function to swap to integers
+void swap (long *a, long *b);
+
+// A utility function to generate a random permutation of arr[]
+void randomize (long *arr, long n);
+
 // parameter struct
 struct thread_sub_block {
     int block_number;
@@ -28,8 +34,11 @@ struct thread_sub_block {
 };
 
 
-#define GIGABYTE_BLOCK 1000000000 // a billion bytes
-#define NUM_EXPERIMENT_REPEATS 1
+// 1.28 GB block --> allows for equal split of work for all threads and block sizes
+// because is divisible by (8 * 80,000,000)
+
+#define GIGABYTE_BLOCK 1280000000
+#define NUM_EXPERIMENT_REPEATS 10
 
 
 int main(int argc, char *argv[]) {
@@ -79,7 +88,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     double mbps = sum / NUM_EXPERIMENT_REPEATS;
-    printf("Mbps: %f\n", mbps);
+    printf("MBps: %f\n", mbps);
 
     free(block);
     free(cp_block);
@@ -138,12 +147,12 @@ void *read_and_write_thread(void *param) {
     char *block = arg->block;
     char *cp_block = arg->cp_block;
 
-    int thread_block_size = (int) ceil(GIGABYTE_BLOCK / num_blocks);
-    int start_index = block_number * thread_block_size;
-    int end_index = (block_number + 1) * thread_block_size;
+    long thread_block_size = (long) ceil(GIGABYTE_BLOCK / num_blocks);
+    long start_index = block_number * thread_block_size;
+    long end_index = (block_number + 1) * thread_block_size;
 
 
-    for (int i = start_index; i < end_index; i += sub_block_size) {
+    for (long i = start_index; i < end_index; i += sub_block_size) {
         if ((i + sub_block_size) > end_index) { // if this memcpy would go outside of the bounds of this thread's block
             // only copy what is left
             size_t remaining_size = (size_t) end_index - i;
@@ -169,12 +178,12 @@ void *seq_write_access_thread(void *param) {
     char *block = arg->block;
 
     // calculate the bounds of this thread
-    int thread_workload_block_size = (int) ceil(GIGABYTE_BLOCK / num_blocks); // chunk of the big block given to each thread
-    int start_index = block_number * thread_workload_block_size;
-    int end_index = (block_number + 1) * thread_workload_block_size;
+    long thread_workload_block_size = (long) ceil(GIGABYTE_BLOCK / num_blocks); // chunk of the big block given to each thread
+    long start_index = block_number * thread_workload_block_size;
+    long end_index = (block_number + 1) * thread_workload_block_size;
 
     // iterate over each block and perform the memset operation
-    for (int i = start_index; i < end_index; i += blk_size) {
+    for (long i = start_index; i < end_index; i += blk_size) {
         // if this memset would go outside of the bounds of this thread's block
         if ((i + blk_size) > end_index) {
             // only set what is left
@@ -187,35 +196,8 @@ void *seq_write_access_thread(void *param) {
     }
 }
 
-
-// A utility function to swap to integers
-void swap (int *a, int *b)
-{
-    int temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-// A utility function to generate a random permutation of arr[]
-void randomize (int arr[], int n)
-{
-    // seed the random number generator so that we produce the same access pattern on every run of this program
-    srand (100);
-
-    // Start from the last element and swap one by one. We don't
-    // need to run for the first element that's why i > 0
-    for (int i = n-1; i > 0; i--)
-    {
-        // Pick a random index from 0 to i
-        int j = rand() % (i+1);
-
-        // Swap arr[i] with the element at random index
-        swap(&arr[i], &arr[j]);
-    }
-}
-
 /*
- * FIXME
+ *
  */
 void *random_write_access_thread(void *param) {
     // unpack the parameters
@@ -226,40 +208,60 @@ void *random_write_access_thread(void *param) {
     char *block = arg->block;
 
     // calculate the bounds of this thread
-    int thread_block_size = (int) ceil(GIGABYTE_BLOCK / num_blocks);
-    int start_index = block_number * thread_block_size;
-    int end_index = (block_number + 1) * thread_block_size;
+    long thread_block_size = (int) ceil(GIGABYTE_BLOCK / num_blocks);
+    long start_index = block_number * thread_block_size;
+    long end_index = (block_number + 1) * thread_block_size;
 
     // create an array of randomized indices in order to simulate random access
-    int num_sub_blocks = (int) ceil((end_index - start_index) / blk_size);
-    //    printf("num_blocks: %d\n", num_blocks);
-    //    printf("num_sub_blocks: %d\n", num_sub_blocks);
+    long num_sub_blocks = (long) ceil((end_index - start_index) / blk_size);
 
-    // TODO: Needs to be allocated on the HEAP
     // TODO: Setup this array outside of the thread so that the overhead is not included in the time
-    int block_indices[num_sub_blocks];
-    for (int i = 0; i < num_sub_blocks; i++) {
-        block_indices[i] = i;
+    long *block_indices = malloc (num_sub_blocks * sizeof(long));
+    for (long i = 0; i < num_sub_blocks; i++) {
+        block_indices[i] = i;;
     }
     randomize(block_indices, num_sub_blocks);
 
     // iterate over each block using the randomized index array to simulate random access, and perform memset
-    for (int b = 0; b < num_sub_blocks; b++) {
-        // if this memset would go outside of the bounds of this thread's block
-        int current_index = b * (int) blk_size + start_index;
-        // printf("Current index: %d", current_index);
-        if ((current_index + thread_block_size) > end_index) {
-            // only set what is left
-            // printf("In here\n");
-            size_t remaining_size = (size_t) end_index - current_index;
+    for (long b = 0; b < num_sub_blocks; b++) {
+        // get the starting index of a random block
+        long current_index = start_index + block_indices[b] * (int) blk_size;
+
+        // check if this memset wouldn't fall off the end of this thread's bounds
+        if ((current_index + blk_size) > end_index) {
+            // if it does, just memset whatever is left over ( a block of size less than blk_size )
+            size_t remaining_size = (size_t) end_index - current_index;;
             memset(&block[current_index], 'a', remaining_size);
         } else {
             // otherwise, memset a block of size 'blk_size'
-            // printf("IN other here\n");
             memset(&block[current_index], 'a', blk_size);
         }
     }
+    free(block_indices);
 
+}
+
+void randomize(long *arr, long n) {
+    // seed the random number generator so that we produce the same access pattern on every run of this program
+    srand(100);
+    //srand ( (unsigned int) time (NULL));
+
+    // Start from the last element and swap one by one. We don't
+    // need to run for the first element that's why i > 0
+    for (long i = n-1; i > 0; i--)
+    {
+        // Pick a random index from 0 to i
+        long j = rand() % (i+1);
+
+        // Swap arr[i] with the element at random index
+        swap(&arr[i], &arr[j]);
+    }
+}
+
+void swap(long *a, long *b) {
+    long temp = *a;
+    *a = *b;
+    *b = temp;
 }
 
 
