@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
     }
     else if (strcmp(argv[1], "iops") == 0) {
-        for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++) {
+        for (int i = 0; i < 1; i++) {
             aggregate_runtime_us += iops(num_threads);
         }
 
@@ -257,8 +257,11 @@ void *int_matrix_thread(void *param) {
     struct int_matrix_block *arg = param; // the structure that holds the parameters of the thread
     long thread_partition = N * N / (long) arg->num_threads;
 
-    for(long i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
-        arg->C[i] = arg->A[i] * arg->B[i] * (int) i + arg->B[i];
+    long next_block = thread_partition * (arg->tid + 1);
+    for (int j = 0; j < NUM_EXPERIMENT_REPEATS; j++) {
+        for (long i = (arg->tid) * thread_partition; i < next_block; i++) {
+            arg->C[i] = arg->A[i] * arg->B[i] * (int) i + arg->B[i];
+        }
     }
     pthread_exit(0);
 }
