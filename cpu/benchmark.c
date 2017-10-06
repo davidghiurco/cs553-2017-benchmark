@@ -10,7 +10,7 @@
 
 // the length of the vector
 // default, but can be changed by command-line input
-long N = 51200; // 51,200
+long N = 512000; // 51,200
 
 #define NUM_EXPERIMENT_REPEATS 100000
 
