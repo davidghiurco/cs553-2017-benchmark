@@ -12,7 +12,7 @@
 // default, but can be changed by command-line input
 long N = 1024;
 
-#define NUM_EXPERIMENT_REPEATS 50
+#define NUM_EXPERIMENT_REPEATS 100
 
 // prototypes
 long flops(int num_threads);
@@ -37,21 +37,7 @@ struct int_matrix_block {
 };
 
 /*
- * This benchmark is setup as a "pessimistic benchmark" (just like HPL is)
- * What this means is essentially, only the operations which are actually useful to the calculation
- * of the matrix multiplication are counted as operations performed by this program.
- * Index calculations, loop increments, etc, are considered metadata/overhead.
- *
- * Note that if the metadata calculations were included in the metric, this benchmark would become a
- * "optimistic" benchmark, which would take into account all arithmetic operations performed.
- * That's not really useful in the real world however, because people mostly care about the "useful"
- * number of operations performed.
- *
- * Also, if this metadata operations were to be included, the performance of this benchmark would far exceed
- * the performance of the HPL benchmark, which is a strong indicator that it is too optimistic.
- *
- * Therefore, The number of operations that we care about depends ONLY on N. Each entry in matrix C takes 2N operations
- * (N multiplications + N additions) and there are N x N entries
+ * This benchmark performs modified vector multiplication
  */
 int main(int argc, char *argv[]) {
     /*
@@ -75,7 +61,10 @@ int main(int argc, char *argv[]) {
         N = atoi(argv[3]);
     }
 
-    long NUM_OPS = 2 * N * (N * N);
+    // 4 operations are performed on each pass of the thread over an array value
+    // array is size N*N
+    // The number of times the experiment is repeated gets multiplied by the total number of operations of 1 experiment
+    long NUM_OPS = 4 * N * N * NUM_EXPERIMENT_REPEATS;
 
     int num_threads = atoi(argv[2]);
 
@@ -86,16 +75,28 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++) {
             aggregate_runtime_us += flops(num_threads);
         }
-        double average = (double) (NUM_OPS * NUM_EXPERIMENT_REPEATS) / (double) aggregate_runtime_us;
-        printf("GFlops: %f\n", average);
+
+        // Convert microseconds to seconds
+        double aggregate_runtime_s = (double) aggregate_runtime_us / 1000000;
+
+        printf("%lf\n", aggregate_runtime_s);
+        double gflops = (double) NUM_OPS / aggregate_runtime_s / 1000000000 ;
+        printf("GFlops: %lf\n", gflops);
 
     }
     else if (strcmp(argv[1], "iops") == 0) {
         for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++) {
             aggregate_runtime_us += iops(num_threads);
         }
-        double average = NUM_OPS * NUM_EXPERIMENT_REPEATS / (double) aggregate_runtime_us;
-        printf("GIops: %f\n", average);
+
+        // Convert microseconds to seconds
+
+        double aggregate_runtime_s = (double) aggregate_runtime_us / 1000000;
+        double giops = (double) NUM_OPS / aggregate_runtime_s / 1000000000;
+
+        printf("%ld\n", NUM_OPS);
+        printf("%f\n", aggregate_runtime_s);
+        printf("GIops: %f\n", giops);
     }
     else {
         printf("Usage error\n");
@@ -154,7 +155,7 @@ long flops(int num_threads) {
     free(B);
     free(C);
 
-    return (long) (end.tv_sec-start.tv_sec)*1000000 + end.tv_usec-start.tv_usec;
+    return ((long) (end.tv_sec-start.tv_sec)*1000000 + (long) (end.tv_usec-start.tv_usec));
 
 }
 
@@ -208,43 +209,56 @@ long iops(int num_threads) {
     free(C);
 
     // calculate the elapsed time in microseconds and return
-    return (long) (end.tv_sec-start.tv_sec)*1000000 + end.tv_usec-start.tv_usec;;
+    return ((long) (end.tv_sec-start.tv_sec)*1000000 + (long) (end.tv_usec-start.tv_usec));
 }
 
-/*
- * worker thread spawned by function flops()
- * takes in a parameter struct pointer containing the bounds of the matrix problem for the particular thread
- */
+//void *float_matrix_thread(void *param) {
+//    struct float_matrix_block *arg = param; // the structure that holds the parameters of the thread
+//    long thread_partition = N / arg->num_threads;
+//
+//    for(long i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
+//        for (int j = 0; j < N; j++){
+//            arg->C[i*N + j] = 0;
+//            for(int k = 0; k < N; k++){
+//                arg->C[i*N + j] += arg->A[i*N + k] * arg->B[k*N + j];
+//            }
+//        }
+//    }
+//    pthread_exit(0);
+//}
+
 void *float_matrix_thread(void *param) {
     struct float_matrix_block *arg = param; // the structure that holds the parameters of the thread
-    int thread_partition = N / arg->num_threads;
+    long thread_partition = N * N / (long) arg->num_threads;
 
-    for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
-        for (int j = 0; j < N; j++){
-            arg->C[i*N + j] = 0;
-            for(int k = 0; k < N; k++){
-                arg->C[i*N + j] += arg->A[i*N + k] * arg->B[k*N + j];
-            }
-        }
+    for(long i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
+        arg->C[i] = arg->A[i] * arg->B[i] * (float)  i + arg->B[i];
     }
     pthread_exit(0);
 }
 
-/*
- * worker thread spawned by function iops()
- * takes in a parameter struct pointer containing the bounds of the matrix problem for the particular thread
- */
+
+//void *int_matrix_thread(void *param) {
+//    struct int_matrix_block *arg = param; // the structure that holds the parameters of the thread
+//    long thread_partition = N / arg->num_threads;
+//
+//    for(long i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
+//        for (int j = 0; j < N; j++){
+//            arg->C[i*N + j] = 0;
+//            for(int k = 0; k < N; k++){
+//                arg->C[i*N + j] += arg->A[i*N + k] * arg->B[k*N + j];
+//            }
+//        }
+//    }
+//    pthread_exit(0);
+//}
+
 void *int_matrix_thread(void *param) {
     struct int_matrix_block *arg = param; // the structure that holds the parameters of the thread
-    int thread_partition = N / arg->num_threads;
+    long thread_partition = N * N / (long) arg->num_threads;
 
-    for(int i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
-        for (int j = 0; j < N; j++){
-            arg->C[i*N + j] = 0;
-            for(int k = 0; k < N; k++){
-                arg->C[i*N + j] += arg->A[i*N + k] * arg->B[k*N + j];
-            }
-        }
+    for(long i = (arg->tid) * thread_partition; i < thread_partition * (arg->tid + 1); i++){
+        arg->C[i] = arg->A[i] * arg->B[i] * (int) i + arg->B[i];
     }
     pthread_exit(0);
 }
