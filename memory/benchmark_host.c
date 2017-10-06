@@ -107,14 +107,11 @@ double work(size_t blk_size, int num_threads, void *thread_function, char *block
 
     gettimeofday(&start, NULL);
     for (int num = 0; num < num_threads; num++) {
-        struct thread_sub_block arg;
-        arg.block_number = num;
-        arg.cp_block = cp_block;
-        arg.num_blocks = num_threads;
-        arg.blk_size = blk_size;
-        arg.block = block;
-        args[num] = arg;
-
+        args[num].block_number = num;
+        args[num].cp_block = cp_block;
+        args[num].num_blocks = num_threads;
+        args[num].blk_size = blk_size;
+        args[num].block = block;
 
         pthread_attr_t attr;
         pthread_attr_init(&attr);
@@ -153,14 +150,7 @@ void *read_and_write_thread(void *param) {
 
 
     for (long i = start_index; i < end_index; i += sub_block_size) {
-//        if ((i + sub_block_size) > end_index) { // if this memcpy would go outside of the bounds of this thread's block
-//            // only copy what is left
-//            size_t remaining_size = (size_t) end_index - i;
-//            memcpy(&cp_block[i], &block[i], remaining_size);
-//        } else {
-            // otherwise, copy a block of size 'sub_block_size'
-            memcpy(&cp_block[i], &block[i], sub_block_size);
-        //}
+        memcpy(&cp_block[i], &block[i], sub_block_size);
     }
 }
 
@@ -184,20 +174,14 @@ void *seq_write_access_thread(void *param) {
 
     // iterate over each block and perform the memset operation
     for (long i = start_index; i < end_index; i += blk_size) {
-        // if this memset would go outside of the bounds of this thread's block
-//        if ((i + blk_size) > end_index) {
-//            // only set what is left
-//            size_t remaining_size = (size_t) end_index - i;
-//            memset(&block[i], 'a', remaining_size);
-//        } else {
-//            // otherwise, copy a block of size 'sub_block_size'
-            memset(&block[i], 'a', blk_size);
-        // }
+        memset(&block[i], 'a', blk_size);
     }
 }
 
 /*
- *
+ * This is the random write access (memset) function. It functions just like the sequqntial write access function
+ * but instead of memsetting consecutive blocks one after the other, it memsets random blocks (using the list of randomized indices)
+ * Note: With small block size and low concurrency, this will take significantly longer than its sequential counterpart
  */
 void *random_write_access_thread(void *param) {
     // unpack the parameters
@@ -226,16 +210,7 @@ void *random_write_access_thread(void *param) {
     for (long b = 0; b < num_sub_blocks; b++) {
         // get the starting index of a random block
         long current_index = start_index + block_indices[b] * (int) blk_size;
-
-        // check if this memset wouldn't fall off the end of this thread's bounds
-//        if ((current_index + blk_size) > end_index) {
-//            // if it does, just memset whatever is left over ( a block of size less than blk_size )
-//            size_t remaining_size = (size_t) end_index - current_index;;
-//            memset(&block[current_index], 'a', remaining_size);
-//        } else {
-            // otherwise, memset a block of size 'blk_size'
-            memset(&block[current_index], 'a', blk_size);
-        //}
+        memset(&block[current_index], 'a', blk_size);
     }
     free(block_indices);
 
