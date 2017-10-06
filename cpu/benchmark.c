@@ -10,7 +10,7 @@
 
 // The dimension of the matrix
 // default, but can be changed by command-line input
-int N = 1024;
+long N = 1024;
 
 #define NUM_EXPERIMENT_REPEATS 50
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
         N = atoi(argv[3]);
     }
 
-    int NUM_OPS = 2 * N * (N * N);
+    long NUM_OPS = 2 * N * (N * N);
 
     int num_threads = atoi(argv[2]);
 
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++) {
             aggregate_runtime_us += flops(num_threads);
         }
-        double average = NUM_OPS * NUM_EXPERIMENT_REPEATS / (double) aggregate_runtime_us;
+        double average = (double) (NUM_OPS * NUM_EXPERIMENT_REPEATS) / (double) aggregate_runtime_us;
         printf("GFlops: %f\n", average);
 
     }
@@ -154,7 +154,6 @@ long flops(int num_threads) {
     free(B);
     free(C);
 
-    // calculate the elapsed time in microseconds and return
     return (long) (end.tv_sec-start.tv_sec)*1000000 + end.tv_usec-start.tv_usec;
 
 }
