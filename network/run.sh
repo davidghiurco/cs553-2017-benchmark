@@ -18,9 +18,10 @@ do
     for threads in 1 2 4 8
     do
         ./bin/benchmark-tcp.exe $threads $mode 1 $ipaddr $port &>> $logsrvtcp &
-        sleep 1
-        ./bin/benchmark-tcp.exe $threads $mode 0 $ipaddr $port &>> $logclttcp
-        sleep 10
+        sleep 1;
+        ./bin/benchmark-tcp.exe $threads $mode 0 $ipaddr $port &>> $logclttcp &
+        wait
+        sleep 30
     done
 done
 
@@ -29,8 +30,8 @@ do
     for threads in 1 2 4 8
     do
         ./bin/benchmark-udp.exe $threads $mode 1 $ipaddr $port &>> $logsrvudp &
-        sleep 1
-        ./bin/benchmark-udp.exe $threads $mode 0 $ipaddr $port &>> $logcltudp
-        sleep 10
+        sleep 1;
+        ./bin/benchmark-udp.exe $threads $mode 0 $ipaddr $port &>> $logcltudp &
+        sleep 30
     done
 done
