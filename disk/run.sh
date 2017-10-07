@@ -21,7 +21,7 @@ do
         logfile="temp.log"
     fi
 
-    echo "" > $logfile
+    echo -n "" > $logfile
 
     for size in {0..3}
     do
