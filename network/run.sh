@@ -8,18 +8,18 @@ logcltudp="udp-client.log"
 ipaddr=127.0.0.1
 port=11155
 
-echo "" > $logsrvtcp
-echo "" > $logsrvudp
-echo "" > $logclttcp
-echo "" > $logcltudp
+echo -n "" > $logsrvtcp
+echo -n "" > $logsrvudp
+echo -n "" > $logclttcp
+echo -n "" > $logcltudp
 
 for mode in {0..1}
 do
     for threads in 1 2 4 8
     do
-        ./bin/benchmark-tcp.exe $threads $mode 1 $ipaddr $port 2>&1 $logsrvtcp &
+        ./bin/benchmark-tcp.exe $threads $mode 1 $ipaddr $port &>> $logsrvtcp &
         sleep 1
-        ./bin/benchmark-tcp.exe $threads $mode 0 $ipaddr $port 2>&1 $logclttcp &
+        ./bin/benchmark-tcp.exe $threads $mode 0 $ipaddr $port &>> $logclttcp
         sleep 10
     done
 done
@@ -28,9 +28,9 @@ for mode in {0..1}
 do
     for threads in 1 2 4 8
     do
-        ./bin/benchmark-udp.exe $threads $mode 1 $ipaddr $port 2>&1 $logsrvudp &
+        ./bin/benchmark-udp.exe $threads $mode 1 $ipaddr $port &>> $logsrvudp &
         sleep 1
-        ./bin/benchmark-udp.exe $threads $mode 0 $ipaddr $port 2>&1 $logcltudp &
+        ./bin/benchmark-udp.exe $threads $mode 0 $ipaddr $port &>> $logcltudp
         sleep 10
     done
 done
