@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <time.h>
+#include <sys/time.h>
 
 #define SIZE8B 0
 #define SIZE8KB 1
@@ -27,8 +27,7 @@ typedef struct thread_arg_t
     int pos_start;
     int pos_length;
     int block_size;
-    long runtime_total;
-    long runtime_average;
+    long runtime;
 } thread_arg_t;
 
 void shuffle(long *vec, int n)
@@ -59,12 +58,13 @@ void *work(void *argv)
     char *buffer;
     int i;
     long rc, rd;
-    clock_t start, end;
+    struct timeval start, end;
 
     buffer = (char *) malloc(arg->block_size * sizeof(char));
 
+    gettimeofday(&start, NULL);
     for (i = 0; i < arg->pos_length; ++i) {
-        start = clock();
+        
         rc = 0;
         do {
             rd = pread(arg->fd_in, &buffer[rc], arg->block_size - rc,
@@ -83,6 +83,7 @@ void *work(void *argv)
                 free(buffer);
                 pthread_exit(NULL);
             }
+            
             rc += rd;
         } while (rc < arg->block_size);
         
@@ -100,14 +101,15 @@ void *work(void *argv)
                     free(buffer);
                     pthread_exit(NULL);
                 }
+                
                 rc += rd;
             } while (rc < arg->block_size);
         }
-        end = clock();
-        arg->runtime_total += ((long) (end - start) * 1000000) / CLOCKS_PER_SEC;
     }
+    gettimeofday(&end, NULL);
 
-    arg->runtime_average = arg->runtime_total / arg->pos_length;
+    arg->runtime = ((long) end.tv_sec - (long) start.tv_sec) 
+            * 1000000 + (end.tv_usec - start.tv_usec);
 
     free(buffer);
 
@@ -123,7 +125,7 @@ int main(int argc, char **argv)
     int num_threads, block_size, num_blocks, mode;
 
     if (argc <= 3 || argc >= 5) {
-        printf("program usage: ./benchmark-lowlevel.exe"
+        printf("program usage: ./benchmark-lowlevel.exe "
                 "<num_threads> <block_size> <mode>\n"
                 "<block_size> accepts the following values:\n"
                 "\t 0 -> 8B block size\n"
@@ -214,8 +216,6 @@ int main(int argc, char **argv)
         args[i].pos_start = i * (num_blocks / num_threads);
         args[i].pos_length = num_blocks / num_threads;
         args[i].block_size = block_size;
-        args[i].runtime_average = 0;
-        args[i].runtime_total = 0;
         rc = pthread_create(&threads[i], NULL, work, &args[i]);
         
         if (rc) {
@@ -239,9 +239,7 @@ int main(int argc, char **argv)
     }
 
     for (i = 0; i < num_threads; ++i) {
-        printf("thread %d total runtime: %ld us\n", i, args[i].runtime_total);
-        printf("thread %d average latency: %ld us\n", i, 
-                args[i].runtime_average);
+        printf("Thread %d runtime: %ld us\n", i, args[i].runtime);
     }
 
     free(pos_vec);
