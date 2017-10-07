@@ -91,6 +91,13 @@ int main(int argc, char *argv[]) {
 
 }
 
+/*
+ * Allocates needed resources for the vector multiplication problem (a vector of doubles),
+ * spawns the specified number of threads
+ * and waits for them to complete
+ *
+ * Returns the runtime in microseconds
+ */
 long flops(int num_threads) {
     double *C;
     C = malloc(N * sizeof(double));
@@ -127,6 +134,13 @@ long flops(int num_threads) {
 
 }
 
+/*
+ * Allocates needed resources for the vector multiplication problem (a vector of integers),
+ * spawns the specified number of threads
+ * and waits for them to complete
+ *
+ * Returns the runtime in microseconds
+ */
 long iops(int num_threads) {
     int *C;
     C = malloc(N * sizeof(int));
@@ -162,6 +176,10 @@ long iops(int num_threads) {
     return ((long) (end.tv_sec - start.tv_sec) * 1000000 + (long) (end.tv_usec - start.tv_usec));
 }
 
+/*
+ * The thread function for floating point operations
+ * For each pass of the loop, 2 floating point operations are performed on the vector
+ */
 void *float_matrix_thread(void *param) {
     struct float_vector_block *arg = param; // the structure that holds the parameters of the thread
     long thread_partition = N / (long) arg->num_threads;
@@ -175,6 +193,10 @@ void *float_matrix_thread(void *param) {
 }
 
 
+/*
+ * The thread function for integer operations
+ * For each pass of the loop, 2 floating point operationsare performed on the vector
+ */
 void *int_matrix_thread(void *param) {
     struct int_vector_block *arg = param; // the structure that holds the parameters of the thread
     long thread_partition = N / (long) arg->num_threads;
