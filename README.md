@@ -24,11 +24,11 @@ The binary is optimized to use these instruction sets
 
 To run an individual experiment, the usage is:
 ```bash
-./benchmark.bin <operation> <num_threads>
+./benchmark.bin <operation> <num threads>
 ```
-where <operation> is either:
-	flops
-	iops
+where __operation__ is either:
+*flops
+*iops
 
 ### Compiling and running HPL
 
@@ -110,6 +110,15 @@ make memory-host
 ```bash
 make run-memory-host
 ```
+
+To run an individual experiment, the usage is:
+```bash
+./benchmark_host.bin <operation> <block size> <num threads>
+```
+where __operation__ is either:
+*read_and_write
+*seq_write_access
+*random_write_access
 
 ### Compiling and running STREAM
 
