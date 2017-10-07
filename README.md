@@ -27,8 +27,8 @@ To run an individual experiment, the usage is:
 ./benchmark.bin <operation> <num threads>
 ```
 where __operation__ is either:
-*flops
-*iops
+* flops
+* iops
 
 ### Compiling and running HPL
 
@@ -116,9 +116,9 @@ To run an individual experiment, the usage is:
 ./benchmark_host.bin <operation> <block size> <num threads>
 ```
 where __operation__ is either:
-*read_and_write
-*seq_write_access
-*random_write_access
+* read_and_write
+* seq_write_access
+* random_write_access
 
 ### Compiling and running STREAM
 
