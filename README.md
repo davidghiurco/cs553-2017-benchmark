@@ -22,6 +22,14 @@ This will run all 8 experiments that have to be written for this part of the ass
 * Note: the experiments in this section are performed using Intel AVX instructions.  
 The binary is optimized to use these instruction sets
 
+To run an individual experiment, the usage is:
+```bash
+./benchmark.bin <operation> <num_threads>
+```
+where <operation> is either:
+	flops
+	iops
+
 ### Compiling and running HPL
 
 First, install and setup Spack
