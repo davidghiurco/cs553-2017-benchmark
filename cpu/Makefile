@@ -1,5 +1,5 @@
-CC = gcc
-CFLAGS = -march=native -mtune=native -O3 -mavx
+CC = c99
+CFLAGS = -march=native -mtune=native -O3
 
 clean:
 	rm -rf *.bin
