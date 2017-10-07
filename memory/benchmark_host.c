@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
             printf("Out of memory!\n");
             exit(1);
         }
+        // repeat the benchmark NUM_EXPERIMENT_REPEATs times, and aggregate the runtime in microseconds
         for (int i = 0; i < NUM_EXPERIMENT_REPEATS; i++)
             sum += work(blk_size, num_threads, read_and_write_thread, block, cp_block);
     } else if (strcmp(argv[1], "seq_write_access") == 0) {
@@ -87,6 +88,8 @@ int main(int argc, char *argv[]) {
         printf("Usage error\n");
         exit(1);
     }
+    // Divide the total aggregated runtime by the total number of experiments to get an average throughput
+    // Note: For the latency experiments, throughput will be converted to latency through unit conversions
     double mbps = sum / NUM_EXPERIMENT_REPEATS;
     printf("MBps: %f\n", mbps);
 
@@ -96,7 +99,10 @@ int main(int argc, char *argv[]) {
     exit(0);
 }
 
-
+/*
+ * Spawns the specified threads and allocates resources for them depending on the type of experiment
+ * Returns the throughput (in MBps) for this experiment
+ */
 double work(size_t blk_size, int num_threads, void *thread_function, char *block, char *cp_block) {
     // char *block;
     pthread_t thread[num_threads];
