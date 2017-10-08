@@ -13,13 +13,17 @@ echo -n "" > $logsrvudp
 echo -n "" > $logclttcp
 echo -n "" > $logcltudp
 
-echo "Running latency experiment" >> $logsrvtcp
-echo "Running latency experiment" >> $logsrvudp
-echo "Running latency experiment" >> $logclttcp
-echo "Running latency experiment" >> $logcltudp
-
 for mode in {0..1}
 do
+    if [ $mode -eq 0 ]
+    then
+        echo "Running latency experiment" >> $logsrvtcp
+        echo "Running latency experiment" >> $logclttcp
+    else
+        echo "Running throughput experiment" >> $logsrvtcp
+        echo "Running throughput experiment" >> $logclttcp
+    fi
+    
     for threads in 1 2 4 8
     do
         ./bin/benchmark-tcp.exe $threads $mode 1 $ipaddr $port &>> $logsrvtcp &
@@ -30,13 +34,17 @@ do
     done
 done
 
-echo "Running throughput experiment" >> $logsrvtcp
-echo "Running throughput experiment" >> $logsrvudp
-echo "Running throughput experiment" >> $logclttcp
-echo "Running throughput experiment" >> $logcltudp
-
 for mode in {0..1}
 do
+    if [ $mode -eq 0 ]
+    then
+        echo "Running latency experiment" >> $logsrvudp
+        echo "Running latency experiment" >> $logcltudp
+    else
+        echo "Running throughput experiment" >> $logsrvudp
+        echo "Running throughput experiment" >> $logcltudp
+    fi
+    
     for threads in 1 2 4 8
     do
         ./bin/benchmark-udp.exe $threads $mode 1 $ipaddr $port &>> $logsrvudp &

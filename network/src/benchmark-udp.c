@@ -21,7 +21,7 @@
 #define NUM_MESSAGES 64 * 8 * 1024
 #define NUM_PACKETS 64 * 128 * 1024
 
-#define NUM_TERMINATE_MSGS 32
+#define NUM_TERMINATE_MSGS 2048
 
 typedef struct thread_arg_t
 {
@@ -57,7 +57,7 @@ void *work_server(void *argv)
 
     terminate = 0;
     if (arg->mode == MODE_LATENCY) {
-        for (i = 0; i < arg->num_messages; ++i) {
+        for (i = 0; i <= arg->num_messages; ++i) {
             memset(buffer, 1, PACKET_SIZE);
             
             rc = 0;
@@ -105,7 +105,7 @@ void *work_server(void *argv)
             }
         }
     } else {
-        for (i = 0; i < arg->num_packets; ++i) {
+        for (i = 0; i <= arg->num_packets; ++i) {
             memset(buffer, 1, PACKET_SIZE);
             
             rc = 0;
@@ -197,24 +197,6 @@ void *work_client(void *argv)
                 rc += rd;
             }
         }
-        
-        memset(buffer, 0, PACKET_SIZE);
-        for (i = 0; i < NUM_TERMINATE_MSGS; ++i) {
-            
-            rc = 0;
-            while (rc < PACKET_SIZE) {
-                rd = sendto(arg->sockfd, &buffer[rc], PACKET_SIZE - rc, 0,
-                        (struct sockaddr *) arg->srv, arg->addrlen);
-
-                if (rd < 0) {
-                    fprintf(stderr, "Could not send package!\n");
-                    free(buffer);
-                    pthread_exit(NULL);
-                }
-                
-                rc += rd;
-            }
-        }
     } else {
         for (i = 0; i < arg->num_packets; ++i) {
             
@@ -238,26 +220,27 @@ void *work_client(void *argv)
                 rc += rd;
             }
         }
-
-        memset(buffer, 0, PACKET_SIZE);
-        for (i = 0; i < NUM_TERMINATE_MSGS; ++i) {
-            
-            rc = 0;
-            while (rc < PACKET_SIZE) {
-                rd = sendto(arg->sockfd, &buffer[rc], PACKET_SIZE - rc, 0,
-                        (struct sockaddr *) arg->srv, arg->addrlen);
-
-                if (rd < 0) {
-                    fprintf(stderr, "Could not send package!\n");
-                    free(buffer);
-                    pthread_exit(NULL);
-                }
-                
-                rc += rd;
-            }
-        }
     }
     gettimeofday(&end, NULL);
+
+    sleep(rand() % 4 + 1);
+    memset(buffer, 0, PACKET_SIZE);
+    for (i = 0; i < NUM_TERMINATE_MSGS; ++i) {
+    
+        rc = 0;
+        while (rc < PACKET_SIZE) {
+            rd = sendto(arg->sockfd, &buffer[rc], PACKET_SIZE - rc, 0,
+                    (struct sockaddr *) arg->srv, arg->addrlen);
+            
+            if (rd < 0) {
+                fprintf(stderr, "Could not send package!\n");
+                free(buffer);
+                pthread_exit(NULL);
+            }
+            
+            rc += rd;
+        }    
+    }
 
     arg->runtime = ((long) end.tv_sec - (long) start.tv_sec) 
             * 1000000 + (end.tv_usec - start.tv_usec);
