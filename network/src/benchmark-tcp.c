@@ -62,7 +62,7 @@ void *work_server(void *argv)
         pthread_exit(NULL);
     }
 
-    buffer = (char *) malloc(PACKET_SIZE * sizeof(char));
+    buffer = (char *) malloc((PACKET_SIZE + 1) * sizeof(char));
 
     if (arg->mode == MODE_LATENCY) {
         for (i = 0; i < arg->num_messages; ++i) {
@@ -150,7 +150,7 @@ void *work_client(void *argv)
 
     arg = (thread_arg_t *) argv;
 
-    dataset = (char *) malloc(PACKET_SIZE * arg->num_packets * sizeof(char));
+    dataset = (char *) malloc((PACKET_SIZE + 1) * arg->num_packets * sizeof(char));
 
     init_dataset(dataset, PACKET_SIZE * arg->num_packets);
     
