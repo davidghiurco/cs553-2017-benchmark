@@ -16,9 +16,9 @@
 #define TYPE_CLIENT 0
 #define TYPE_SERVER 1
 
-#define PACKET_SIZE 8 * 1024
-#define NUM_MESSAGES 8 * 1024
-#define NUM_PACKETS 128 * 1024
+#define PACKET_SIZE 1024
+#define NUM_MESSAGES 64 * 8 * 1024
+#define NUM_PACKETS 64 * 128 * 1024
 
 typedef struct thread_arg_t
 {
@@ -144,15 +144,15 @@ void *work_server(void *argv)
 void *work_client(void *argv)
 {
     thread_arg_t *arg;
-    char *dataset, *buffer;
+    char *buffer;
     int rc, rd, i;
     struct timeval start, end;
 
     arg = (thread_arg_t *) argv;
 
-    dataset = (char *) malloc(PACKET_SIZE * arg->num_packets * sizeof(char));
+    buffer = (char *) malloc(PACKET_SIZE * sizeof(char));
 
-    init_dataset(dataset, PACKET_SIZE * arg->num_packets);
+    init_dataset(buffer, PACKET_SIZE);
     
     gettimeofday(&start, NULL);
     if ((rc = connect(arg->sockfd, arg->srv, arg->addrlen)) < 0) {
@@ -162,7 +162,6 @@ void *work_client(void *argv)
 
     if (arg->mode == MODE_LATENCY) {
         for (i = 0; i < arg->num_messages; ++i) {
-            buffer = &dataset[i * PACKET_SIZE];
             
             rc = 0;
             while (rc < PACKET_SIZE) {
@@ -197,7 +196,6 @@ void *work_client(void *argv)
         }
     } else {
         for (i = 0; i < arg->num_packets; ++i) {
-            buffer = &dataset[i * PACKET_SIZE];
             
             rc = 0;
             while (rc < PACKET_SIZE) {
@@ -222,8 +220,13 @@ void *work_client(void *argv)
         while (rc < PACKET_SIZE) {
             rd = recv(arg->sockfd, &buffer[rc], PACKET_SIZE - rc, 0);            
 
+            if (rd == 0) {
+                fprintf(stdout, "Connection closed at receive!\n");
+                break;
+            }
+            
             if (rd < 0) {
-                fprintf(stderr, "Could not send package!\n");
+                fprintf(stderr, "Could not receive package!\n");
                 free(buffer);
                 pthread_exit(NULL);
             }
@@ -236,7 +239,7 @@ void *work_client(void *argv)
     arg->runtime = ((long) end.tv_sec - (long) start.tv_sec) 
             * 1000000 + (end.tv_usec - start.tv_usec);
 
-    free(dataset);
+    free(buffer);
     pthread_exit(NULL);
 }
 
@@ -248,6 +251,8 @@ int main(int argc, char **argv)
     pthread_t *threads;
     thread_arg_t *args;
     int i, j, rc;
+    double throughput;
+    long max_runtime, latency;
 
     // parsing arguments //
     if (argc <= 5 || argc >= 7) {
@@ -256,7 +261,7 @@ int main(int argc, char **argv)
                 "where <mode> accepts the following values:\n"
                 "\t 0 - Latency experiment\n"
                 "\t 1 - Througput experiment\n"
-                "where <type accepts the following values:\n"
+                "where <type> accepts the following values:\n"
                 "\t 0 - Client\n"
                 "\t 1 - Server\n");
         exit(-1);
@@ -379,8 +384,22 @@ int main(int argc, char **argv)
     }
 
     if (type == TYPE_CLIENT) {
-        for (i = 0; i < num_threads; ++i) {
-            printf("Thread %d runtime: %ld us\n", i, args[i].runtime);
+        max_runtime = args[0].runtime;
+        for (i = 1; i < num_threads; ++i) {
+            if (max_runtime < args[i].runtime) {
+                max_runtime = args[i].runtime;
+            }
+        }
+        
+        printf("Elapsed time: %ld ms\n", max_runtime / 1000);
+        if (mode == MODE_LATENCY) {
+            latency = NUM_MESSAGES;
+            latency = max_runtime / latency;
+            printf("Ping-pong message latency: %ld us\n", latency);
+        } else {
+            throughput = (8.0 * PACKET_SIZE * NUM_PACKETS) 
+                    / (double) max_runtime;
+            printf("Throughput: %lf Mbps\n", throughput);
         }
     }
 
