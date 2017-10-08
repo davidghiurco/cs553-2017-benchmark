@@ -247,8 +247,9 @@ int main(int argc, char **argv)
             max_runtime = args[i].runtime;
         }
     }
-    
-    if (num_blocks == SMALLSETSIZE) {
+
+    latency = 0;
+    if (atoi(argv[2]) == SIZE8B) {
         throughput = (SMALLSETSIZE * 8.0) / (double) max_runtime;
         latency = (max_runtime / 8) / 1000;
     } else {
@@ -257,7 +258,7 @@ int main(int argc, char **argv)
 
     printf("Elapsed time: %ld ms\n", max_runtime / 1000);
     printf("Throughput: %lf MB/s\n", throughput);
-    if (num_blocks == SMALLSETSIZE) {
+    if (atoi(argv[2]) == SIZE8B) {
         printf("1B Lantecy: %ld ms\n", latency);
     }
 
