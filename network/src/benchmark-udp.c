@@ -16,7 +16,7 @@
 #define TYPE_CLIENT 0
 #define TYPE_SERVER 1
 
-#define PACKET_SIZE 64 * 1024
+#define PACKET_SIZE 8 * 1024
 #define NUM_MESSAGES 8 * 1024
 #define NUM_PACKETS 128 * 1024
 
