@@ -1,125 +1,64 @@
-
 Running 8B block size experiment
-thread 0 total runtime: 30620000 us
-thread 0 average latency: 1 us
-thread 0 total runtime: 56770000 us
-thread 0 average latency: 6 us
-thread 1 total runtime: 57110000 us
-thread 1 average latency: 6 us
-thread 0 total runtime: 98130000 us
-thread 0 average latency: 23 us
-thread 1 total runtime: 99210000 us
-thread 1 average latency: 23 us
-thread 2 total runtime: 98650000 us
-thread 2 average latency: 23 us
-thread 3 total runtime: 99640000 us
-thread 3 average latency: 23 us
-thread 0 total runtime: 149570000 us
-thread 0 average latency: 71 us
-thread 1 total runtime: 149220000 us
-thread 1 average latency: 71 us
-thread 2 total runtime: 150470000 us
-thread 2 average latency: 71 us
-thread 3 total runtime: 146770000 us
-thread 3 average latency: 69 us
-thread 4 total runtime: 146460000 us
-thread 4 average latency: 69 us
-thread 5 total runtime: 149960000 us
-thread 5 average latency: 71 us
-thread 6 total runtime: 149150000 us
-thread 6 average latency: 71 us
-thread 7 total runtime: 152200000 us
-thread 7 average latency: 72 us
+Thread 0 runtime: 114249462 us
+Thread 0 runtime: 99633146 us
+Thread 1 runtime: 98652989 us
+Thread 0 runtime: 84160495 us
+Thread 1 runtime: 83984466 us
+Thread 2 runtime: 84096260 us
+Thread 3 runtime: 84220164 us
+Thread 0 runtime: 99423892 us
+Thread 1 runtime: 100114436 us
+Thread 2 runtime: 100216671 us
+Thread 3 runtime: 99744567 us
+Thread 4 runtime: 100008710 us
+Thread 5 runtime: 100128838 us
+Thread 6 runtime: 99865690 us
+Thread 7 runtime: 99947431 us
 Running 8KB block size experiment
-thread 0 total runtime: 13090000 us
-thread 0 average latency: 9 us
-thread 0 total runtime: 15470000 us
-thread 0 average latency: 23 us
-thread 1 total runtime: 15420000 us
-thread 1 average latency: 23 us
-thread 0 total runtime: 19730000 us
-thread 0 average latency: 60 us
-thread 1 total runtime: 20020000 us
-thread 1 average latency: 61 us
-thread 2 total runtime: 19560000 us
-thread 2 average latency: 59 us
-thread 3 total runtime: 20040000 us
-thread 3 average latency: 61 us
-thread 0 total runtime: 24960000 us
-thread 0 average latency: 152 us
-thread 1 total runtime: 25250000 us
-thread 1 average latency: 154 us
-thread 2 total runtime: 25990000 us
-thread 2 average latency: 158 us
-thread 3 total runtime: 26070000 us
-thread 3 average latency: 159 us
-thread 4 total runtime: 26260000 us
-thread 4 average latency: 160 us
-thread 5 total runtime: 26210000 us
-thread 5 average latency: 159 us
-thread 6 total runtime: 26120000 us
-thread 6 average latency: 159 us
-thread 7 total runtime: 26110000 us
-thread 7 average latency: 159 us
+Thread 0 runtime: 188798626 us
+Thread 0 runtime: 128040983 us
+Thread 1 runtime: 127106502 us
+Thread 0 runtime: 80972782 us
+Thread 1 runtime: 81083600 us
+Thread 2 runtime: 81402669 us
+Thread 3 runtime: 81220683 us
+Thread 0 runtime: 96399803 us
+Thread 1 runtime: 96785632 us
+Thread 2 runtime: 97183029 us
+Thread 3 runtime: 100569897 us
+Thread 4 runtime: 98389247 us
+Thread 5 runtime: 95967520 us
+Thread 6 runtime: 99126026 us
+Thread 7 runtime: 97754384 us
 Running 8MB block size experiment
-thread 0 total runtime: 11740000 us
-thread 0 average latency: 9171 us
-thread 0 total runtime: 13860000 us
-thread 0 average latency: 21656 us
-thread 1 total runtime: 13570000 us
-thread 1 average latency: 21203 us
-thread 0 total runtime: 15900000 us
-thread 0 average latency: 49687 us
-thread 1 total runtime: 16050000 us
-thread 1 average latency: 50156 us
-thread 2 total runtime: 16000000 us
-thread 2 average latency: 50000 us
-thread 3 total runtime: 16040000 us
-thread 3 average latency: 50125 us
-thread 0 total runtime: 16190000 us
-thread 0 average latency: 101187 us
-thread 1 total runtime: 16980000 us
-thread 1 average latency: 106125 us
-thread 2 total runtime: 16760000 us
-thread 2 average latency: 104750 us
-thread 3 total runtime: 17240000 us
-thread 3 average latency: 107750 us
-thread 4 total runtime: 17200000 us
-thread 4 average latency: 107500 us
-thread 5 total runtime: 16990000 us
-thread 5 average latency: 106187 us
-thread 6 total runtime: 17060000 us
-thread 6 average latency: 106625 us
-thread 7 total runtime: 17070000 us
-thread 7 average latency: 106687 us
+Thread 0 runtime: 136311158 us
+Thread 0 runtime: 181117882 us
+Thread 1 runtime: 180542270 us
+Thread 0 runtime: 90728641 us
+Thread 1 runtime: 91452147 us
+Thread 2 runtime: 91512235 us
+Thread 3 runtime: 91506275 us
+Thread 0 runtime: 54300089 us
+Thread 1 runtime: 53618321 us
+Thread 2 runtime: 54509103 us
+Thread 3 runtime: 55877175 us
+Thread 4 runtime: 55172651 us
+Thread 5 runtime: 55226153 us
+Thread 6 runtime: 55674919 us
+Thread 7 runtime: 54495647 us
 Running 80MB block size experiment
-thread 0 total runtime: 12930000 us
-thread 0 average latency: 101015 us
-thread 0 total runtime: 13960000 us
-thread 0 average latency: 218125 us
-thread 1 total runtime: 13770000 us
-thread 1 average latency: 215156 us
-thread 0 total runtime: 14620000 us
-thread 0 average latency: 456875 us
-thread 1 total runtime: 14850000 us
-thread 1 average latency: 464062 us
-thread 2 total runtime: 14940000 us
-thread 2 average latency: 466875 us
-thread 3 total runtime: 14780000 us
-thread 3 average latency: 461875 us
-thread 0 total runtime: 14780000 us
-thread 0 average latency: 923750 us
-thread 1 total runtime: 15070000 us
-thread 1 average latency: 941875 us
-thread 2 total runtime: 14930000 us
-thread 2 average latency: 933125 us
-thread 3 total runtime: 15180000 us
-thread 3 average latency: 948750 us
-thread 4 total runtime: 14420000 us
-thread 4 average latency: 901250 us
-thread 5 total runtime: 14860000 us
-thread 5 average latency: 928750 us
-thread 6 total runtime: 15120000 us
-thread 6 average latency: 945000 us
-thread 7 total runtime: 14930000 us
-thread 7 average latency: 933125 us
+Thread 0 runtime: 96466313 us
+Thread 0 runtime: 85354387 us
+Thread 1 runtime: 85493313 us
+Thread 0 runtime: 68993483 us
+Thread 1 runtime: 69918312 us
+Thread 2 runtime: 69658665 us
+Thread 3 runtime: 69879548 us
+Thread 0 runtime: 65571518 us
+Thread 1 runtime: 65374641 us
+Thread 2 runtime: 64475765 us
+Thread 3 runtime: 66450834 us
+Thread 4 runtime: 65855896 us
+Thread 5 runtime: 65735370 us
+Thread 6 runtime: 65980051 us
+Thread 7 runtime: 66275010 us
