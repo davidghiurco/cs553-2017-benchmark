@@ -13,6 +13,11 @@ echo -n "" > $logsrvudp
 echo -n "" > $logclttcp
 echo -n "" > $logcltudp
 
+echo "Running latency experiment" >> $logsrvtcp
+echo "Running latency experiment" >> $logsrvudp
+echo "Running latency experiment" >> $logclttcp
+echo "Running latency experiment" >> $logcltudp
+
 for mode in {0..1}
 do
     for threads in 1 2 4 8
@@ -24,6 +29,11 @@ do
         sleep 60
     done
 done
+
+echo "Running throughput experiment" >> $logsrvtcp
+echo "Running throughput experiment" >> $logsrvudp
+echo "Running throughput experiment" >> $logclttcp
+echo "Running throughput experiment" >> $logcltudp
 
 for mode in {0..1}
 do
