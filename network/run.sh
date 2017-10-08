@@ -21,7 +21,7 @@ do
         sleep 1;
         ./bin/benchmark-tcp.exe $threads $mode 0 $ipaddr $port &>> $logclttcp &
         wait
-        sleep 30
+        sleep 60
     done
 done
 
@@ -32,6 +32,7 @@ do
         ./bin/benchmark-udp.exe $threads $mode 1 $ipaddr $port &>> $logsrvudp &
         sleep 1;
         ./bin/benchmark-udp.exe $threads $mode 0 $ipaddr $port &>> $logcltudp &
-        sleep 30
+        wait
+        sleep 60
     done
 done
