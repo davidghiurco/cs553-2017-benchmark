@@ -64,7 +64,6 @@ void *work(void *argv)
 
     gettimeofday(&start, NULL);
     for (i = 0; i < arg->pos_length; ++i) {
-        
         rc = 0;
         do {
             rd = pread(arg->fd_in, &buffer[rc], arg->block_size - rc,
@@ -124,6 +123,7 @@ int main(int argc, char **argv)
     long *pos_vec;
     int num_threads, block_size, num_blocks, mode;
 
+    // initialized arguments //
     if (argc <= 3 || argc >= 5) {
         printf("program usage: ./benchmark-lowlevel.exe "
                 "<num_threads> <block_size> <mode>\n"
@@ -204,6 +204,7 @@ int main(int argc, char **argv)
         shuffle(pos_vec, num_blocks);
     }
 
+    // starting worker threads //
     for (i = 0; i < num_threads; ++i) {
         args[i].mode = mode;
         args[i].fd_in = dup(fd_in);
@@ -224,6 +225,7 @@ int main(int argc, char **argv)
         }
     }
 
+    // joining worker threads //
     for (i = 0; i < num_threads; ++i) {
         rc = pthread_join(threads[i], NULL);
         
@@ -242,6 +244,7 @@ int main(int argc, char **argv)
         printf("Thread %d runtime: %ld us\n", i, args[i].runtime);
     }
 
+    // cleaning up //
     free(pos_vec);
     free(threads);
     free(args);
