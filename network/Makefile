@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -Wall -lpthread
+CFLAGS=-g -Wall -O2 -lpthread
 
 all: bin
 	$(CC) $(CFLAGS) -o bin/benchmark-tcp.exe src/benchmark-tcp.c
