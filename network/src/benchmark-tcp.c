@@ -16,7 +16,7 @@
 #define TYPE_CLIENT 0
 #define TYPE_SERVER 1
 
-#define PACKET_SIZE 8 * 1024
+#define PACKET_SIZE 64 * 1024
 #define NUM_MESSAGES 8 * 1024
 #define NUM_PACKETS 128 * 1024
 
@@ -249,6 +249,7 @@ int main(int argc, char **argv)
     thread_arg_t *args;
     int i, j, rc;
 
+    // parsing arguments //
     if (argc <= 5 || argc >= 7) {
         fprintf(stderr, "Program usage: ./benchmark-tcp.exe "
                 "<num_threads> <mode> <type> <ip_addr> <start_port>\n"
@@ -290,6 +291,7 @@ int main(int argc, char **argv)
     srand(time(NULL));
     args = (thread_arg_t *) malloc(num_threads * sizeof(thread_arg_t));
 
+    // creating and binding (where necessary) the sockets for each thread //
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
@@ -341,6 +343,7 @@ int main(int argc, char **argv)
         freeaddrinfo(res);
     }
 
+    // creating and running the threads //
     threads = (pthread_t *) malloc(num_threads * sizeof(pthread_t));
 
     for (i = 0; i < num_threads; ++i) {
@@ -365,6 +368,7 @@ int main(int argc, char **argv)
 
     }
 
+    // joining the threads //
     for (i = 0; i < num_threads; ++i) {
         rc = pthread_join(threads[i], NULL);
         if (rc) {
