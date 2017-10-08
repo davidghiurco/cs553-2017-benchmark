@@ -15,7 +15,7 @@
 #define RANDOM 2
 
 #define SETSIZE 10 * 128 * 1024 * 1024
-#define SMALLSETSIZE 128 * 128 * 1024
+#define SMALLSETSIZE 10 * 128 * 1024
 #define DEBUG 0
 
 typedef struct thread_arg_t
@@ -120,7 +120,8 @@ int main(int argc, char **argv)
     pthread_t *threads;
     thread_arg_t *args;
     int fd_in, fd_out, rc, i;
-    long *pos_vec;
+    long *pos_vec, max_runtime, latency;
+    double throughput;
     int num_threads, block_size, num_blocks, mode;
 
     // initialized arguments //
@@ -240,8 +241,24 @@ int main(int argc, char **argv)
         }
     }
 
-    for (i = 0; i < num_threads; ++i) {
-        printf("Thread %d runtime: %ld us\n", i, args[i].runtime);
+    max_runtime = (long) args[0].runtime;
+    for (i = 1; i < num_threads; ++i) {
+        if (max_runtime < args[i].runtime) {
+            max_runtime = args[i].runtime;
+        }
+    }
+    
+    if (num_blocks == SMALLSETSIZE) {
+        throughput = (SMALLSETSIZE * 8.0) / (double) max_runtime;
+        latency = (max_runtime / 8) / 1000;
+    } else {
+        throughput = (SETSIZE * 8.0) / (double) max_runtime;
+    }
+
+    printf("Elapsed time: %ld ms\n", max_runtime / 1000);
+    printf("Throughput: %lf MB/s\n", throughput);
+    if (num_blocks == SMALLSETSIZE) {
+        printf("1B Lantecy: %ld ms\n", latency);
     }
 
     // cleaning up //
