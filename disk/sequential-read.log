@@ -1,20 +1,44 @@
 Running 8B block size experiment
-Could not open input file file.in
-Could not open input file file.in
-Could not open input file file.in
-Could not open input file file.in
+Elapsed time: 460 ms
+Throughput: 22.770677 MB/s
+1B Lantecy: 57 ms
+Elapsed time: 464 ms
+Throughput: 22.572983 MB/s
+1B Lantecy: 58 ms
+Elapsed time: 472 ms
+Throughput: 22.208347 MB/s
+1B Lantecy: 59 ms
+Elapsed time: 750 ms
+Throughput: 13.963903 MB/s
+1B Lantecy: 93 ms
 Running 8KB block size experiment
-Could not open input file file.in
-Could not open input file file.in
-Could not open input file file.in
-Could not open input file file.in
+Elapsed time: 79011 ms
+Throughput: 0.132712 MB/s
+1B Lantecy: 9876 ms
+Elapsed time: 109363 ms
+Throughput: 0.095880 MB/s
+1B Lantecy: 13670 ms
+Elapsed time: 61028 ms
+Throughput: 0.171818 MB/s
+1B Lantecy: 7628 ms
+Elapsed time: 44675 ms
+Throughput: 0.234708 MB/s
+1B Lantecy: 5584 ms
 Running 8MB block size experiment
-Could not open input file file.in
-Could not open input file file.in
-Could not open input file file.in
-Could not open input file file.in
+Elapsed time: 125059 ms
+Throughput: 85.858690 MB/s
+Elapsed time: 91116 ms
+Throughput: 117.842682 MB/s
+Elapsed time: 46018 ms
+Throughput: 233.326528 MB/s
+Elapsed time: 73845 ms
+Throughput: 145.403058 MB/s
 Running 80MB block size experiment
-Could not open input file file.in
-Could not open input file file.in
-Could not open input file file.in
-Could not open input file file.in
+Elapsed time: 110135 ms
+Throughput: 97.492812 MB/s
+Elapsed time: 68878 ms
+Throughput: 155.888348 MB/s
+Elapsed time: 101940 ms
+Throughput: 105.330566 MB/s
+Elapsed time: 80849 ms
+Throughput: 132.807145 MB/s
