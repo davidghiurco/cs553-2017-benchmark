@@ -1,64 +1,20 @@
 Running 8B block size experiment
-Thread 0 runtime: 114249462 us
-Thread 0 runtime: 99633146 us
-Thread 1 runtime: 98652989 us
-Thread 0 runtime: 84160495 us
-Thread 1 runtime: 83984466 us
-Thread 2 runtime: 84096260 us
-Thread 3 runtime: 84220164 us
-Thread 0 runtime: 99423892 us
-Thread 1 runtime: 100114436 us
-Thread 2 runtime: 100216671 us
-Thread 3 runtime: 99744567 us
-Thread 4 runtime: 100008710 us
-Thread 5 runtime: 100128838 us
-Thread 6 runtime: 99865690 us
-Thread 7 runtime: 99947431 us
+Could not open input file file.in
+Could not open input file file.in
+Could not open input file file.in
+Could not open input file file.in
 Running 8KB block size experiment
-Thread 0 runtime: 188798626 us
-Thread 0 runtime: 128040983 us
-Thread 1 runtime: 127106502 us
-Thread 0 runtime: 80972782 us
-Thread 1 runtime: 81083600 us
-Thread 2 runtime: 81402669 us
-Thread 3 runtime: 81220683 us
-Thread 0 runtime: 96399803 us
-Thread 1 runtime: 96785632 us
-Thread 2 runtime: 97183029 us
-Thread 3 runtime: 100569897 us
-Thread 4 runtime: 98389247 us
-Thread 5 runtime: 95967520 us
-Thread 6 runtime: 99126026 us
-Thread 7 runtime: 97754384 us
+Could not open input file file.in
+Could not open input file file.in
+Could not open input file file.in
+Could not open input file file.in
 Running 8MB block size experiment
-Thread 0 runtime: 136311158 us
-Thread 0 runtime: 181117882 us
-Thread 1 runtime: 180542270 us
-Thread 0 runtime: 90728641 us
-Thread 1 runtime: 91452147 us
-Thread 2 runtime: 91512235 us
-Thread 3 runtime: 91506275 us
-Thread 0 runtime: 54300089 us
-Thread 1 runtime: 53618321 us
-Thread 2 runtime: 54509103 us
-Thread 3 runtime: 55877175 us
-Thread 4 runtime: 55172651 us
-Thread 5 runtime: 55226153 us
-Thread 6 runtime: 55674919 us
-Thread 7 runtime: 54495647 us
+Could not open input file file.in
+Could not open input file file.in
+Could not open input file file.in
+Could not open input file file.in
 Running 80MB block size experiment
-Thread 0 runtime: 96466313 us
-Thread 0 runtime: 85354387 us
-Thread 1 runtime: 85493313 us
-Thread 0 runtime: 68993483 us
-Thread 1 runtime: 69918312 us
-Thread 2 runtime: 69658665 us
-Thread 3 runtime: 69879548 us
-Thread 0 runtime: 65571518 us
-Thread 1 runtime: 65374641 us
-Thread 2 runtime: 64475765 us
-Thread 3 runtime: 66450834 us
-Thread 4 runtime: 65855896 us
-Thread 5 runtime: 65735370 us
-Thread 6 runtime: 65980051 us
-Thread 7 runtime: 66275010 us
+Could not open input file file.in
+Could not open input file file.in
+Could not open input file file.in
+Could not open input file file.in
