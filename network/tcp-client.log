@@ -1,0 +1,18 @@
+Running latency experiment
+Elapsed time: 4102 ms
+Ping-pong message latency: 7 us
+Elapsed time: 2555 ms
+Ping-pong message latency: 4 us
+Elapsed time: 1463 ms
+Ping-pong message latency: 2 us
+Elapsed time: 558 ms
+Ping-pong message latency: 1 us
+Running throughput experiment
+Elapsed time: 5739 ms
+Throughput: 11973.847040 Mbps
+Elapsed time: 2763 ms
+Throughput: 24865.423459 Mbps
+Elapsed time: 1832 ms
+Throughput: 37493.071878 Mbps
+Elapsed time: 1163 ms
+Throughput: 59080.443327 Mbps

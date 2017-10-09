@@ -394,7 +394,7 @@ int main(int argc, char **argv)
         printf("Elapsed time: %ld ms\n", max_runtime / 1000);
         if (mode == MODE_LATENCY) {
             latency = NUM_MESSAGES;
-            latency = max_runtime / latency;
+            latency = (max_runtime / latency) * num_threads;
             printf("Ping-pong message latency: %ld us\n", latency);
         } else {
             throughput = (8.0 * PACKET_SIZE * NUM_PACKETS) 
