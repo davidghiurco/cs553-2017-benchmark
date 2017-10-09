@@ -1,44 +1,40 @@
 Running 8B block size experiment
-Elapsed time: 31960 ms
-Throughput: 0.328090 MB/s
-1B Lantecy: 3995 ms
-Elapsed time: 41905 ms
-Throughput: 0.250224 MB/s
-1B Lantecy: 5238 ms
-Elapsed time: 23462 ms
-Throughput: 0.446925 MB/s
-1B Lantecy: 2932 ms
-Elapsed time: 44918 ms
-Throughput: 0.233439 MB/s
-1B Lantecy: 5614 ms
+Elapsed time: 1585 ms
+Throughput: 6.612442 MB/s
+1B Lantecy: 198 ms
+Elapsed time: 1826 ms
+Throughput: 5.741466 MB/s
+1B Lantecy: 228 ms
+Elapsed time: 5145 ms
+Throughput: 2.037956 MB/s
+1B Lantecy: 643 ms
+Elapsed time: 3390 ms
+Throughput: 3.093034 MB/s
+1B Lantecy: 423 ms
 Running 8KB block size experiment
-Elapsed time: 537357 ms
-Throughput: 0.019514 MB/s
-1B Lantecy: 67169 ms
-Elapsed time: 302899 ms
-Throughput: 0.034618 MB/s
-1B Lantecy: 37862 ms
-Elapsed time: 163547 ms
-Throughput: 0.064114 MB/s
-1B Lantecy: 20443 ms
-Elapsed time: 136804 ms
-Throughput: 0.076648 MB/s
-1B Lantecy: 17100 ms
+Elapsed time: 158862 ms
+Throughput: 67.589305 MB/s
+Elapsed time: 161827 ms
+Throughput: 66.351165 MB/s
+Elapsed time: 163220 ms
+Throughput: 65.784560 MB/s
+Elapsed time: 170499 ms
+Throughput: 62.976293 MB/s
 Running 8MB block size experiment
-Elapsed time: 275751 ms
-Throughput: 38.938790 MB/s
-Elapsed time: 282257 ms
-Throughput: 38.041148 MB/s
-Elapsed time: 181843 ms
-Throughput: 59.047550 MB/s
-Elapsed time: 143592 ms
-Throughput: 74.777146 MB/s
+Elapsed time: 157682 ms
+Throughput: 68.095269 MB/s
+Elapsed time: 159979 ms
+Throughput: 67.117401 MB/s
+Elapsed time: 166739 ms
+Throughput: 64.396376 MB/s
+Elapsed time: 161700 ms
+Throughput: 66.403200 MB/s
 Running 80MB block size experiment
-Elapsed time: 179836 ms
-Throughput: 59.706413 MB/s
-Elapsed time: 127090 ms
-Throughput: 84.486177 MB/s
-Elapsed time: 127975 ms
-Throughput: 83.902212 MB/s
-Elapsed time: 144724 ms
-Throughput: 74.192358 MB/s
+Elapsed time: 160397 ms
+Throughput: 66.942594 MB/s
+Elapsed time: 154946 ms
+Throughput: 69.297673 MB/s
+Elapsed time: 121230 ms
+Throughput: 88.570534 MB/s
+Elapsed time: 115486 ms
+Throughput: 92.975799 MB/s
